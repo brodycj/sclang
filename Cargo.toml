@@ -1,0 +1,14 @@
+[package]
+name = "sclang"
+version = "0.0.1-dev"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+pest = "2"
+pest_derive = "2"
+
+[dev-dependencies]
+expect-test = "1"
+rustyline = "14"
+serial_test = "3"
