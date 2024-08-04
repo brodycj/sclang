@@ -14,6 +14,13 @@ type RcRef<T> = Arc<T>;
 type WeakRef<T> = Weak<T>;
 type WeakRefCell<T> = RwCell<WeakRef<T>>;
 
+// XXX SHARED DATA - XXX TODO IMPROVE INTERNAL API
+static scl_debug: RwCell<bool> = RwCell::new(false);
+
+pub fn is_debug_enabled() -> bool {
+    *scl_debug.read().unwrap()
+}
+
 // XXX TODO IMPROVE NAMING CONSISTENCY HERE
 
 struct OuterCellWrapper {
@@ -54,15 +61,18 @@ static drop_cell_count: RwCell<i32> = RwCell::new(0);
 
 impl Drop for InnerSCInfoStorage {
     fn drop(&mut self) {
-        // XXX TODO OPTIONAL OUTPUT
-        println!("DROP CELL DATA with info:");
-        println!("- text 1: {}", self.text1.read().unwrap());
-        println!("- text 2: {}", self.text2.read().unwrap());
+        if is_debug_enabled() {
+            println!("DROP CELL DATA with info:");
+            println!("- text 1: {}", self.text1.read().unwrap());
+            println!("- text 2: {}", self.text2.read().unwrap());
+        }
         let mut x = drop_cell_count.write().unwrap();
         *x = *x + 1;
         drop(x);
-        println!("DROP CELL COUNT: {}", get_drop_cell_count());
-        println!("--- --- ---");
+        if is_debug_enabled() {
+            println!("DROP CELL COUNT: {}", get_drop_cell_count());
+            println!("--- --- ---");
+        }
     }
 }
 
@@ -77,11 +87,12 @@ pub fn reset_drop_cell_count() {
 
 impl Drop for MiddleCellWrapper {
     fn drop(&mut self) {
-        // XXX TODO OPTIONAL OUTPUT
-        println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
-        println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
-        println!("- text 2: {}", self.inner_sc_info_storage.text2.read().unwrap());
-        println!("--- --- ---");
+        if is_debug_enabled() {
+            println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
+            println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
+            println!("- text 2: {}", self.inner_sc_info_storage.text2.read().unwrap());
+            println!("--- --- ---");
+        }
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
@@ -463,4 +474,16 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     let x = SCLCursor::from_outer_cell_wrapper(cw);
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
+}
+
+pub fn enable_feature(feature_name: &str) {
+    match feature_name {
+        "debug" => {
+            *scl_debug.write().unwrap() = true;
+            println!("DEBUG ENABLED");
+        }
+        _ => {
+            println!("UNKNOWN FEATURE - IGNORED: {}", feature_name);
+        }
+    }
 }

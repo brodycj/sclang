@@ -24,8 +24,26 @@ cargo run --example i-cli
 
 SAMPLE INTERACTIVE SESSION THAT DEMONSTRATES STORING CIRCULAR-LINKED DATA CELLS WITH DEBUG PRINT OUTPUT INCLUDED, ABLE TO REMOVE & CLEAN UP UNREACHABLE CELLS IN THE END
 
+STARTUP:
+
 ```sh
 % cargo run --example i-cli
+--> 
+```
+
+ENABLE DEBUG OUTPUT:
+
+```sh
+--> (enable-feature debug)
+DEBUG ENABLED
+ENABLE FEATURE: debug
+
+--> 
+```
+
+STORE SOME DATA:
+
+```sh
 --> (store-data data-node-a ("a-text-1" "a-text-2"))
 STORED DATA FOR SYMBOL - data-node-a
 - text 1: "a-text-1"
@@ -48,6 +66,12 @@ STORED DATA FOR SYMBOL - data-node-b
   - link 2 -> link 1 - empty
   - link 2 -> link 2 - empty
 
+--> 
+```
+
+UPDATE SOME DATA WITH A CIRCULAR REFERENCE:
+
+```sh
 --> (update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-b)))
 UPDATED DATA FOR SYMBOL - data-node-a
 - text 1: "a-text-1"
@@ -71,6 +95,12 @@ UPDATED DATA FOR SYMBOL - data-node-a
     link 2 -> link 2 info - text 1: "a-text-1"
     link 2 -> link 2 info - text 2: "a-text-2"
 
+--> 
+```
+
+ADD & UPDATE WITH SOME MORE CIRCULAR DATA:
+
+```sh
 --> (store-data data-node-c ("c-text-1" "c-text-2" (data-node-a data-node-b)))
 STORED DATA FOR SYMBOL - data-node-c
 - text 1: "c-text-1"
@@ -117,6 +147,12 @@ UPDATED DATA FOR SYMBOL - data-node-b
     link 2 -> link 2 info - text 1: "b-text-1"
     link 2 -> link 2 info - text 2: "b-text-2"
 
+--> 
+```
+
+STORE ANOTHER 2 NODES OF DATA:
+
+```sh
 --> (store-data data-node-d ("d-text-1" "d-text-2" (data-node-a data-node-c)))
 STORED DATA FOR SYMBOL - data-node-d
 - text 1: "d-text-1"
@@ -163,6 +199,12 @@ STORED DATA FOR SYMBOL - data-node-e
     link 2 -> link 2 info - text 1: "c-text-1"
     link 2 -> link 2 info - text 2: "c-text-2"
 
+--> 
+```
+
+MAKE THIS EVEN MORE CIRCULAR:
+
+```sh
 --> (update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-e)))
 UPDATED DATA FOR SYMBOL - data-node-a
 - text 1: "a-text-1"
@@ -186,6 +228,12 @@ UPDATED DATA FOR SYMBOL - data-node-a
     link 2 -> link 2 info - text 1: "d-text-1"
     link 2 -> link 2 info - text 2: "d-text-2"
 
+--> 
+```
+
+CHECK THE FIRST NODE:
+
+```sh
 --> (show-data data-node-a)
 DATA FOR SYMBOL - data-node-a
 - text 1: "a-text-1"
@@ -209,6 +257,12 @@ DATA FOR SYMBOL - data-node-a
     link 2 -> link 2 info - text 1: "d-text-1"
     link 2 -> link 2 info - text 2: "d-text-2"
 
+--> 
+```
+
+DROP A SYMBOL FOR DATA NODE B AND CHECK THAT NODE B IS STILL NOT GONE:
+
+```sh
 --> (drop-symbol data-node-b)
 DROPPED SYMBOL: data-node-b
 
@@ -238,6 +292,12 @@ DATA FOR SYMBOL - data-node-a
     link 2 -> link 2 info - text 1: "d-text-1"
     link 2 -> link 2 info - text 2: "d-text-2"
 
+--> 
+```
+
+SHOW SOME MORE DATA - SHOULD SEE THAT NODE B IS STILL THERE:
+
+```sh
 --> (show-data data-node-c)
 DATA FOR SYMBOL - data-node-c
 - text 1: "c-text-1"
@@ -284,6 +344,12 @@ DATA FOR SYMBOL - data-node-e
     link 2 -> link 2 info - text 1: "c-text-1"
     link 2 -> link 2 info - text 2: "c-text-2"
 
+--> 
+```
+
+DROP FIRST SYMBOL (FOR NODE A):
+
+```sh
 --> (drop-symbol data-node-a)
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "a-text-1"
@@ -295,6 +361,14 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 --- --- ---
 DROPPED SYMBOL: data-node-a
 
+--> 
+```
+
+NOTE that while a couple "middle cell" wrappers are dropped & cleaned up, no data should be removed at this point.
+
+TAKE A QUICK PEEK INTO NODE D - THIS DATA DUMP SHOWS ALL 5 NODES WITH DATA STILL PRESENT:
+
+```sh
 --> (show-data data-node-d)
 DATA FOR SYMBOL - data-node-d
 - text 1: "d-text-1"
@@ -318,9 +392,20 @@ DATA FOR SYMBOL - data-node-d
     link 2 -> link 2 info - text 1: "b-text-1"
     link 2 -> link 2 info - text 2: "b-text-2"
 
+--> 
+```
+
+TRY DROPPING SYMBOL FOR DATA NODE B AGAIN - DROP FAILURE IS EXPECTED IN THIS CASE:
+
+```sh
 --> (drop-symbol data-node-b)
 DROP FAILURE - SYMBOL NOT FOUND: data-node-b
+--> 
+```
 
+DROP SYMBOL FOR NODE C & TAKE ANOTHER PEEK INTO DATA NODE D - SHOULD STILL SHOW ALL DATA IS STORED AT THIS POINT:
+
+```sh
 --> (drop-symbol data-node-c)
 DROPPED SYMBOL: data-node-c
 
@@ -347,6 +432,12 @@ DATA FOR SYMBOL - data-node-d
     link 2 -> link 2 info - text 1: "b-text-1"
     link 2 -> link 2 info - text 2: "b-text-2"
 
+--> 
+```
+
+DROP SYMBOL FOR NODE D & PEEK INTO NODE E - SHOULD STILL SHOW ALL DATA NODES REACHABLE AT THIS POINT:
+
+```sh
 --> (drop-symbol data-node-d)
 DROPPED SYMBOL: data-node-d
 
@@ -373,6 +464,12 @@ DATA FOR SYMBOL - data-node-e
     link 2 -> link 2 info - text 1: "c-text-1"
     link 2 -> link 2 info - text 2: "c-text-2"
 
+--> 
+```
+
+DROP SYMBOL FOR NODE E - DEBUG OUTPUT SHOULD SHOW CLEAN-UP OF ALL STORED DATA AT THIS POINT:
+
+```sh
 --> (drop-symbol data-node-e)
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "e-text-1"

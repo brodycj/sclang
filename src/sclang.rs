@@ -10,7 +10,7 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sclcelldata::{create_cell_with_links, create_cell_with_text_only, SCLCursor};
+use sclcelldata::{create_cell_with_links, create_cell_with_text_only, enable_feature, is_debug_enabled, SCLCursor};
 
 pub type SCLDataMap = HashMap<String, SCLCursor>;
 
@@ -26,6 +26,7 @@ command_name = { "store-data"
   | "show-data"
   | "update-data"
   | "drop-symbol"
+  | "enable-feature"
 }
 symbol_name = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "-")* }
 // XXX TODO BACKSLASH-ESCAPED CHARS INCLUDING DOUBLE-QUOTE
@@ -86,7 +87,9 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                         );
                                         let mut r = String::new();
                                         writeln!(r, "STORED DATA FOR SYMBOL - {}", symbol_name);
-                                        write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
+                                        if is_debug_enabled() {
+                                            write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
+                                        }
                                         return r;
                                     }
                                     "update-data" => {
@@ -111,7 +114,9 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                             );
                                             let mut r = String::new();
                                             writeln!(r, "UPDATED DATA FOR SYMBOL - {}", symbol_name);
-                                            write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
+                                            if is_debug_enabled() {
+                                                write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
+                                            }
                                             return r;
                                         }
                                     }
@@ -120,6 +125,10 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                         panic!("FATAL ERROR: BAD INPUT - MISSING GRACEFUL ERROR HANDLER");
                                     }
                                     "drop-symbol" => {
+                                        println!("EXTRA ARGUMENT PRESENT FOR COMMAND: {}", command_name);
+                                        panic!("FATAL ERROR: BAD INPUT - MISSING GRACEFUL ERROR HANDLER");
+                                    }
+                                    "enable-feature" => {
                                         println!("EXTRA ARGUMENT PRESENT FOR COMMAND: {}", command_name);
                                         panic!("FATAL ERROR: BAD INPUT - MISSING GRACEFUL ERROR HANDLER");
                                     }
@@ -162,6 +171,12 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                             "update-data" => {
                                 println!("MISSING DATA ARGUMENT FOR COMMAND: {}", command_name);
                                 panic!("FATAL ERROR: BAD INPUT - MISSING GRACEFUL ERROR HANDLER");
+                            }
+                            "enable-feature" => {
+                                let mut r = String::new();
+                                writeln!(r, "ENABLE FEATURE: {}", symbol_name);
+                                enable_feature(symbol_name);
+                                return r;
                             }
                             _ => unreachable!("INTERNAL ERROR - XXX"),
                         }
