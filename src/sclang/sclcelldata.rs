@@ -85,7 +85,8 @@ impl Drop for MiddleCellWrapper {
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
-        if self.next_middle_wrapper.read().unwrap().is_none() {
+        let maybe_next_middle_wrapper = self.next_middle_wrapper.read().unwrap();
+        if maybe_next_middle_wrapper.is_none() {
             return
         }
 
@@ -94,7 +95,9 @@ impl Drop for MiddleCellWrapper {
             return
         }
 
-        if self.next_middle_wrapper.read().unwrap().as_ref().unwrap().next_middle_wrapper.read().unwrap().is_none() {
+        let next_middle_wrapper_ref = maybe_next_middle_wrapper.as_ref().unwrap().clone();
+
+        if next_middle_wrapper_ref.next_middle_wrapper.read().unwrap().is_none() {
             return
         }
 
@@ -107,7 +110,8 @@ impl Drop for MiddleCellWrapper {
             link2: maybe_inner_sc_linkage.clone().unwrap().link2.clone().unwrap().inner_sc_info_storage.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
         });
 
-        *self.next_middle_wrapper.read().unwrap().clone().unwrap().inner_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
+        *next_middle_wrapper_ref.inner_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
+
         *self.inner_sc_info_storage.sc_linkage_info_weak_ref.write().unwrap() = RcRef::downgrade(&inner_sc_linkage_ref);
     }
 }
