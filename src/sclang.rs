@@ -126,7 +126,7 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                     _ => unreachable!("INTERNAL ERROR - XXX"),
                                 }
                             }
-                            _ => unreachable!("XXX"),
+                            _ => unreachable!("INTERNAL ERROR - XXX"),
                         }
                     } else {
                         match command_name {
