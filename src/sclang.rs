@@ -221,6 +221,12 @@ fn test_circular_2_records() {
     let drop_cell_count = sclcelldata::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
+    cl = r#"(enable-feature debug)"#;
+    x = expect![[r#"
+        ENABLE FEATURE: debug
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
     cl = r#"(store-data data-1 ("first text" "second text"))"#;
     x = expect![[r#"
         STORED DATA FOR SYMBOL - data-1
@@ -367,6 +373,12 @@ fn test_circular_2_records() {
     let drop_cell_count = sclcelldata::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
+    cl = r#"(enable-feature debug)"#;
+    x = expect![[r#"
+        ENABLE FEATURE: debug
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
     cl = r#"(show-data data-1)"#;
     x = expect![[r#"
         DATA FOR SYMBOL - data-1
@@ -436,6 +448,12 @@ fn test_circular_5_records() {
     "#]];
     let drop_cell_count = sclcelldata::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(enable-feature debug)"#;
+    x = expect![[r#"
+        ENABLE FEATURE: debug
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
 
     cl = r#"(store-data data-node-a ("a-text-1" "a-text-2"))"#;
     x = expect![[r#"
