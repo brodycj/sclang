@@ -39,8 +39,8 @@ struct MiddleCellWrapper {
     // XXX TBD RECONSIDER KEEPING next_middle_wrapper_ref - ??? ??? ???
     next_middle_wrapper_ref: RwCell<Option<MiddleCellWrapperRcRef>>,
     // XXX TBD NAMING OF THESE ??? ??? ???
-    first_inner_middle_wrapper_ref: RwCell<Option<MiddleCellWrapperRcRef>>,
-    inner_inner_middle_wrapper_ref: RwCell<Option<MiddleCellWrapperRcRef>>,
+    first_inner_middle_wrapper_link: RwCell<Option<MiddleCellWrapperRcRef>>,
+    inner_inner_middle_wrapper_link: RwCell<Option<MiddleCellWrapperRcRef>>,
 }
 
 // XXX TBD RECONSIDER NAMING ??? ???
@@ -237,8 +237,8 @@ impl MiddleCellWrapper {
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
             next_middle_wrapper_ref: RwCell::new(None),
-            first_inner_middle_wrapper_ref: RwCell::new(None),
-            inner_inner_middle_wrapper_ref: RwCell::new(None),
+            first_inner_middle_wrapper_link: RwCell::new(None),
+            inner_inner_middle_wrapper_link: RwCell::new(None),
         });
 
         *inner_sc_info_storage.linkage_strong_ref_wrapper.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
@@ -272,8 +272,8 @@ impl MiddleCellWrapper {
             // XXX TBD KEEP NO next_middle_wrapper_ref reference here LEADS TO 5-NODE CIRCULAR TEST FAILURE
             // next_middle_wrapper_ref: RwCell::new(None),
             // XXX TODO STORE XXX XXX in first_inner_middle_wrapper_ref here
-            first_inner_middle_wrapper_ref: RwLock::new(None),
-            inner_inner_middle_wrapper_ref: RwLock::new(Some(
+            first_inner_middle_wrapper_link: RwLock::new(None),
+            inner_inner_middle_wrapper_link: RwLock::new(Some(
                 inner_sc_info_storage
                     .clone()
                     .inner_inner_middle_cell_wrapper_ref
@@ -320,8 +320,8 @@ impl MiddleCellWrapper {
             // XXX TBD KEEP NO next_middle_wrapper_ref reference here LEADS TO 5-NODE CIRCULAR TEST FAILURE
             // next_middle_wrapper_ref: RwCell::new(None),
             // XXX TODO STORE XXX XXX in first_inner_middle_wrapper_ref here
-            first_inner_middle_wrapper_ref: RwLock::new(None),
-            inner_inner_middle_wrapper_ref: RwLock::new(Some(
+            first_inner_middle_wrapper_link: RwLock::new(None),
+            inner_inner_middle_wrapper_link: RwLock::new(Some(
                 inner_sc_info_storage
                     .clone()
                     .inner_inner_middle_cell_wrapper_ref
