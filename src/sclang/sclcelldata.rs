@@ -105,19 +105,19 @@ impl Drop for MiddleCellWrapper {
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
-        let maybe_next_middle_wrapper = self.next_middle_wrapper_ref.read().unwrap();
-        if maybe_next_middle_wrapper.is_none() {
-            return;
-        }
-
         let maybe_inner_sc_linkage = self.inner_sc_linkage_info_strong_ref.read().unwrap().clone();
         if maybe_inner_sc_linkage.is_none() {
             return;
         }
 
-        let next_middle_wrapper_ref = maybe_next_middle_wrapper.as_ref().unwrap().clone();
+        let maybe_dest_middle_wrapper = self.first_inner_middle_wrapper_link.read().unwrap();
+        if maybe_dest_middle_wrapper.is_none() {
+            return;
+        }
 
-        if next_middle_wrapper_ref.next_middle_wrapper_ref.read().unwrap().is_none() {
+        let dest_middle_wrapper_ref = maybe_dest_middle_wrapper.as_ref().unwrap().clone();
+
+        if dest_middle_wrapper_ref.next_middle_wrapper_ref.read().unwrap().is_none() {
             return;
         }
 
@@ -125,9 +125,9 @@ impl Drop for MiddleCellWrapper {
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
         // XXX TBD QUICK WORKAROUND TO AVOID CRASH WITH ADDITIONAL INNER MIDDLE WRAPPER ADDED - XXX TBD ??? ??? ??? ??? ???
-        if maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.is_none() || maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().1.is_none() {
-            return;
-        }
+        // if maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.is_none() || maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().1.is_none() {
+        //     return;
+        // }
 
         let inner_sc_info_storage_link1 = maybe_inner_sc_linkage
             .clone()
@@ -161,7 +161,7 @@ impl Drop for MiddleCellWrapper {
             ),
         });
 
-        *next_middle_wrapper_ref.inner_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
+        *dest_middle_wrapper_ref.inner_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
 
         *self.inner_sc_info_storage.sc_linkage_info_weak_ref.write().unwrap() = RcRef::downgrade(&inner_sc_linkage_ref);
     }
@@ -552,6 +552,8 @@ pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     let x = SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
     x.update_data(text1, text2, None, None);
     x.update_data(text1, text2, None, None);
+    x.update_data(text1, text2, None, None);
+    x.update_data(text1, text2, None, None);
     x
 }
 
@@ -560,13 +562,21 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     let cw = OuterCellWrapper::create_with_cell_data(
         text1,
         text2,
-        Some(link1.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
+        // Some(link1.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
+        // Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
+        None,
+        None,
     );
 
     // XXX WITH QUICK & UGLY WORKAROUND APPLIED MULTIPLE TIMES FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE ETC ETC ETC
     let x = SCLCursor::from_outer_cell_wrapper(cw);
-    x.update_data(text1, text2, Some(link1.clone()), Some(link2.clone()));
+    // x.update_data(text1, text2, Some(link1.clone()), Some(link2.clone()));
+    // x.update_data(text1, text2, Some(link1.clone()), Some(link2.clone()));
+    // x.update_data(text1, text2, Some(link1.clone()), Some(link2.clone()));
+    x.update_data(text1, text2, None, None);
+    x.update_data(text1, text2, None, None);
+    x.update_data(text1, text2, None, None);
+    x.update_data(text1, text2, None, None);
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
 }
