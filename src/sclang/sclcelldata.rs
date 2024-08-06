@@ -124,6 +124,11 @@ impl Drop for MiddleCellWrapper {
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
+        // XXX TBD QUICK WORKAROUND TO AVOID CRASH WITH ADDITIONAL INNER MIDDLE WRAPPER ADDED - XXX TBD ??? ??? ??? ??? ???
+        if maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.is_none() || maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().1.is_none() {
+            return;
+        }
+
         let inner_sc_info_storage_link1 = maybe_inner_sc_linkage
             .clone()
             .unwrap()
@@ -164,7 +169,9 @@ impl Drop for MiddleCellWrapper {
 
 impl OuterCellWrapper {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
-        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_inner_cell_data(text1, text2, link1, link2);
+        let inner_inner_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_inner_cell_data(text1, text2, link1, link2);
+        // let middle_cell_wrapper_ref = inner_inner_cell_wrapper_ref;
+        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_inner_wrapper(inner_inner_cell_wrapper_ref);
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
             middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -212,6 +219,7 @@ impl MiddleCellWrapper {
     fn create_with_inner_inner_cell_data(
         text1: &str,
         text2: &str,
+        // XXX XXX TODO LINKAGE SHOULD PROBABLY NOT BE IN THE INNER INNER XXX WRAPPER HERE
         link1: Option<MiddleCellWrapperRcRef>,
         link2: Option<MiddleCellWrapperRcRef>,
     ) -> MiddleCellWrapperRcRef {
@@ -283,6 +291,46 @@ impl MiddleCellWrapper {
         if old_linkage_strong_ref_wrapper.is_some() {
             *old_linkage_strong_ref_wrapper.unwrap().inner_sc_linkage_info_strong_ref.write().unwrap() = None;
         }
+
+        middle_wrapper_ref
+    }
+
+    fn create_with_inner_inner_wrapper(inner_inner_wrapper_ref: MiddleCellWrapperRcRef) -> MiddleCellWrapperRcRef {
+        // XXX TODO REMOVE EXTRA REF & EXTRA CLONE HERE IF POSSIBLE
+        let inner_inner_wrapper = inner_inner_wrapper_ref.clone();
+
+        // XXX TBD EXTRA CLONE ??? ???
+        let inner_sc_info_storage = inner_inner_wrapper.clone().inner_sc_info_storage.clone();
+
+        let cell_linkage_strong_ref = RwCell::new(inner_sc_info_storage.sc_linkage_info_weak_ref.read().unwrap().upgrade());
+
+        // XXX TODO RECONSIDER EXTRA REF CLONE HERE
+        let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
+
+        // KEEP XXX XXX INFO IN SYNC HERE
+        let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.sc_linkage_info_weak_ref.write().unwrap();
+        *cell_linkage_weak_ref_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
+
+        let middle_wrapper_ref = RcRef::new(MiddleCellWrapper {
+            inner_sc_info_storage: inner_sc_info_storage.clone(),
+            inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
+            outer_wrapper_ref: RwLock::new(inner_inner_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
+            // XXX TBD KEEP THIS FOR NOW:
+            next_middle_wrapper_ref: RwCell::new(Some(inner_inner_wrapper.clone())),
+            // XXX TBD KEEP NO next_middle_wrapper_ref reference here LEADS TO 5-NODE CIRCULAR TEST FAILURE
+            // next_middle_wrapper_ref: RwCell::new(None),
+            // XXX TODO STORE XXX XXX in first_inner_middle_wrapper_ref here
+            first_inner_middle_wrapper_ref: RwLock::new(None),
+            inner_inner_middle_wrapper_ref: RwLock::new(Some(
+                inner_sc_info_storage
+                    .clone()
+                    .inner_inner_middle_cell_wrapper_ref
+                    .read()
+                    .unwrap()
+                    .upgrade()
+                    .unwrap(),
+            )),
+        });
 
         middle_wrapper_ref
     }
@@ -500,8 +548,9 @@ impl SCLCursor {
 }
 
 pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
-    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
+    // XXX WITH QUICK & UGLY WORKAROUND APPLIED MULTIPLE TIMES FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE ETC ETC ETC
     let x = SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
+    x.update_data(text1, text2, None, None);
     x.update_data(text1, text2, None, None);
     x
 }
@@ -515,8 +564,9 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
         Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
     );
 
-    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
+    // XXX WITH QUICK & UGLY WORKAROUND APPLIED MULTIPLE TIMES FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE ETC ETC ETC
     let x = SCLCursor::from_outer_cell_wrapper(cw);
+    x.update_data(text1, text2, Some(link1.clone()), Some(link2.clone()));
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
 }
