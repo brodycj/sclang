@@ -294,19 +294,22 @@ impl MiddleCellWrapper {
 impl PeerSCLinkageInfo {
     // XXX TBD SUPPORT CREATE API FN WITH EMPTY LINKS ???
     fn create_with_middle_wrapper_links(link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> RcRef<PeerSCLinkageInfo> {
+        // NEED TO KEEP THESE FOR XXX XXX XXX
+        let keep_middle_wrapper_link1 = link1.clone();
+        let keep_middle_wrapper_link2 = link2.clone();
         // XXX TBD UTIL FN ???s
-        let inner_middle_cell_wrapper_link1 = match link1.clone() {
+        let inner_middle_cell_wrapper_link1 = match link1 {
             None => None,
             Some(m) => m.inner_sc_info_storage.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
         };
-        let inner_middle_cell_wrapper_link2 = match link2.clone() {
+        let inner_middle_cell_wrapper_link2 = match link2 {
             None => None,
             Some(m) => m.inner_sc_info_storage.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
         };
         // XXX TODO NOTE: XXX XXX XXX
         RcRef::new(PeerSCLinkageInfo {
-            linkage1: (inner_middle_cell_wrapper_link1, link1),
-            linkage2: (inner_middle_cell_wrapper_link2, link2),
+            linkage1: (inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
+            linkage2: (inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
         })
     }
 
