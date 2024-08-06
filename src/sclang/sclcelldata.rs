@@ -36,7 +36,9 @@ struct MiddleCellWrapper {
     // XXX TODO EXPLAIN RATIONALE FOR THIS STRONG REF OPTION
     inner_sc_linkage_info_strong_ref: RwCell<Option<RcRef<InnerSCLinkageInfo>>>,
     outer_wrapper_ref: WeakRefCell<OuterCellWrapper>,
-    next_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
+    // XXX TBD RECONSIDER KEEPING next_middle_wrapper_ref - ??? ??? ???
+    next_middle_wrapper_ref: RwCell<Option<MiddleCellWrapperRcRef>>,
+    inner_middle_wrapper_ref: RwCell<Option<MiddleCellWrapperRcRef>>,
 }
 
 // XXX TBD RECONSIDER NAMING ??? ???
@@ -99,7 +101,7 @@ impl Drop for MiddleCellWrapper {
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
-        let maybe_next_middle_wrapper = self.next_middle_wrapper.read().unwrap();
+        let maybe_next_middle_wrapper = self.next_middle_wrapper_ref.read().unwrap();
         if maybe_next_middle_wrapper.is_none() {
             return;
         }
@@ -111,7 +113,7 @@ impl Drop for MiddleCellWrapper {
 
         let next_middle_wrapper_ref = maybe_next_middle_wrapper.as_ref().unwrap().clone();
 
-        if next_middle_wrapper_ref.next_middle_wrapper.read().unwrap().is_none() {
+        if next_middle_wrapper_ref.next_middle_wrapper_ref.read().unwrap().is_none() {
             return;
         }
 
@@ -206,7 +208,8 @@ impl MiddleCellWrapper {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
-            next_middle_wrapper: RwCell::new(None),
+            next_middle_wrapper_ref: RwCell::new(None),
+            inner_middle_wrapper_ref: RwCell::new(None),
         });
 
         *inner_sc_info_storage.linkage_strong_ref_wrapper.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
@@ -235,7 +238,11 @@ impl MiddleCellWrapper {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwLock::new(next_middle_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
-            next_middle_wrapper: RwCell::new(Some(next_middle_wrapper.clone())),
+            // XXX TBD KEEP THIS FOR NOW:
+            next_middle_wrapper_ref: RwCell::new(Some(next_middle_wrapper.clone())),
+            // XXX TBD KEEP NO next_middle_wrapper_ref reference here LEADS TO 5-NODE CIRCULAR TEST FAILURE
+            // next_middle_wrapper_ref: RwCell::new(None),
+            inner_middle_wrapper_ref: RwLock::new(Some(inner_sc_info_storage.clone().inner_middle_cell_wrapper_ref.read().unwrap().upgrade().unwrap())),
         });
 
         let old_linkage_strong_ref_wrapper = inner_sc_info_storage_ref.linkage_strong_ref_wrapper.read().unwrap().upgrade().clone();
