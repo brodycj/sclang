@@ -24,7 +24,7 @@ pub fn is_debug_enabled() -> bool {
 // XXX TODO IMPROVE NAMING CONSISTENCY HERE
 
 struct OuterCellWrapper {
-    middle_cell_wrapper: RwCell<MiddleCellWrapperRcRef>,
+    outer_middle_cell_wrapper: RwCell<MiddleCellWrapperRcRef>,
     inner_sc_info_storage_ref: InnerSCInfoStorageRcRef,
 }
 
@@ -160,7 +160,7 @@ impl OuterCellWrapper {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
         let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
-            middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
+            outer_middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
         });
         // XXX TODO UTIL FN - REPEATED CODE
@@ -169,9 +169,9 @@ impl OuterCellWrapper {
         outer_wrapper_ref
     }
 
-    fn create_with_inner_data_wrapper(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn create_with_middlewrapper(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
-            middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
+            outer_middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
         });
         // XXX TODO UTIL FN - REPEATED CODE
@@ -181,13 +181,16 @@ impl OuterCellWrapper {
     }
 
     fn update_sc_linkage(outer_cell_wrapper_ref: OuterCellWrapperRcRef, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) {
-        let middle_cell_wrapper_ref =
-            MiddleCellWrapper::create_with_next_middle_cell_wrapper_data(outer_cell_wrapper_ref.middle_cell_wrapper.read().unwrap().clone(), link1, link2);
+        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_next_middle_cell_wrapper_data(
+            outer_cell_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone(),
+            link1,
+            link2,
+        );
         // XXX TBD RECONSIDER EXTRA REF CLONE HERE
         let next_middle_cell_wrapper_ref = middle_cell_wrapper_ref.clone();
         let mut next_middle_cell_wrapper_writer = next_middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap();
         *next_middle_cell_wrapper_writer = RcRef::downgrade(&outer_cell_wrapper_ref);
-        let mut middle_cell_wrapper_writer = outer_cell_wrapper_ref.middle_cell_wrapper.write().unwrap();
+        let mut middle_cell_wrapper_writer = outer_cell_wrapper_ref.outer_middle_cell_wrapper.write().unwrap();
         *middle_cell_wrapper_writer = middle_cell_wrapper_ref.clone();
     }
 
@@ -195,7 +198,7 @@ impl OuterCellWrapper {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
-            OuterCellWrapper::create_with_inner_data_wrapper(middle_cell_wrapper_ref)
+            OuterCellWrapper::create_with_middlewrapper(middle_cell_wrapper_ref)
         } else {
             my_outer_wrapper_ref.unwrap()
         }
@@ -468,7 +471,7 @@ impl SCLCursor {
     }
 
     fn get_middle_cell_wrapper(&self) -> MiddleCellWrapperRcRef {
-        self.outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()
+        self.outer_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone()
     }
 
     fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
@@ -488,8 +491,8 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     let cw = OuterCellWrapper::create_with_cell_data(
         text1,
         text2,
-        Some(link1.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
+        Some(link1.clone().outer_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone()),
+        Some(link2.clone().outer_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone()),
     );
 
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
