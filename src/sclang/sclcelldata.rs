@@ -118,9 +118,25 @@ impl Drop for MiddleCellWrapper {
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
-        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.unwrap().inner_sc_info_storage.clone();
+        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage
+            .clone()
+            .unwrap()
+            .linkage1
+            .clone()
+            .0
+            .unwrap()
+            .inner_sc_info_storage
+            .clone();
 
-        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage.clone().unwrap().linkage2.clone().0.unwrap().inner_sc_info_storage.clone();
+        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage
+            .clone()
+            .unwrap()
+            .linkage2
+            .clone()
+            .0
+            .unwrap()
+            .inner_sc_info_storage
+            .clone();
 
         let inner_sc_linkage_ref = RcRef::new(InnerSCLinkageInfo {
             // XXX TODO UTILITY FN
