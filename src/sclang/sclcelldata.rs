@@ -124,9 +124,25 @@ impl Drop for MiddleCellWrapper {
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
-        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.unwrap().inner_sc_info_storage.clone();
+        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage
+            .clone()
+            .unwrap()
+            .linkage1
+            .clone()
+            .0
+            .unwrap()
+            .inner_sc_info_storage
+            .clone();
 
-        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage.clone().unwrap().linkage2.clone().0.unwrap().inner_sc_info_storage.clone();
+        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage
+            .clone()
+            .unwrap()
+            .linkage2
+            .clone()
+            .0
+            .unwrap()
+            .inner_sc_info_storage
+            .clone();
 
         let inner_sc_linkage_ref = RcRef::new(InnerSCLinkageInfo {
             // XXX TODO UTILITY FN
@@ -249,7 +265,15 @@ impl MiddleCellWrapper {
             // next_middle_wrapper_ref: RwCell::new(None),
             // XXX TODO STORE XXX XXX in first_inner_middle_wrapper_ref here
             first_inner_middle_wrapper_ref: RwLock::new(None),
-            inner_inner_middle_wrapper_ref: RwLock::new(Some(inner_sc_info_storage.clone().inner_inner_middle_cell_wrapper_ref.read().unwrap().upgrade().unwrap())),
+            inner_inner_middle_wrapper_ref: RwLock::new(Some(
+                inner_sc_info_storage
+                    .clone()
+                    .inner_inner_middle_cell_wrapper_ref
+                    .read()
+                    .unwrap()
+                    .upgrade()
+                    .unwrap(),
+            )),
         });
 
         let old_linkage_strong_ref_wrapper = inner_sc_info_storage_ref.linkage_strong_ref_wrapper.read().unwrap().upgrade().clone();
