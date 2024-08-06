@@ -148,7 +148,7 @@ impl Drop for MiddleCellWrapper {
 
 impl OuterCellWrapper {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
-        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
+        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
             middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -193,7 +193,7 @@ impl OuterCellWrapper {
 }
 
 impl MiddleCellWrapper {
-    fn create_with_inner_cell_data(
+    fn create_with_inner_inner_cell_data(
         text1: &str,
         text2: &str,
         link1: Option<MiddleCellWrapperRcRef>,
