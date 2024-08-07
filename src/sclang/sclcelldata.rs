@@ -64,7 +64,7 @@ struct InnerSCDataStorage {
     // XXX TRACK WHERE THE STRONG PEER SC LINKAGE REF IS STORED - XXX TODO IMPROVE NAMING & CLARIFY DESCRIPTION OF THIS FIELD
     peer_sc_linkage_middle_wrapper_ref: WeakRefCell<MiddleSCWrapper>,
     // XXX TBD RECONSIDER KEEPING THIS STATE HERE - ??? ??? ???
-    inner_middle_cell_wrapper_ref: WeakRefCell<MiddleSCWrapper>,
+    inner_middle_sc_wrapper_ref: WeakRefCell<MiddleSCWrapper>,
 }
 
 static drop_sc_data_count: RwCell<i32> = RwCell::new(0);
@@ -134,13 +134,13 @@ impl Drop for MiddleSCWrapper {
             sc_data_storage: self.sc_data_storage.clone(),
             linkage1: (
                 Some(linked_sc_data_storage_ref1.clone()),
-                linked_sc_data_storage_ref1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
-                linked_sc_data_storage_ref1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_data_storage_ref1.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_data_storage_ref1.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
             ),
             linkage2: (
                 Some(linked_sc_data_storage_ref2.clone()),
-                linked_sc_data_storage_ref2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
-                linked_sc_data_storage_ref2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_data_storage_ref2.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_data_storage_ref2.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
             ),
         });
 
@@ -152,44 +152,44 @@ impl Drop for MiddleSCWrapper {
 
 impl OuterSCWrapper {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> OuterCellWrapperRcRef {
-        let middle_cell_wrapper_ref = MiddleSCWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
+        let middle_sc_wrapper_ref = MiddleSCWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterSCWrapper {
-            outer_middle_sc_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
-            inner_sc_data_storage: middle_cell_wrapper_ref.sc_data_storage.clone(),
+            outer_middle_sc_wrapper: RwCell::new(middle_sc_wrapper_ref.clone()),
+            inner_sc_data_storage: middle_sc_wrapper_ref.sc_data_storage.clone(),
         });
         // XXX TODO UTIL FN - REPEATED CODE
-        let mut middle_cell_wrapper_writer = middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap();
-        *middle_cell_wrapper_writer = RcRef::downgrade(&outer_wrapper_ref);
+        let mut middle_sc_wrapper_writer = middle_sc_wrapper_ref.outer_wrapper_ref.write().unwrap();
+        *middle_sc_wrapper_writer = RcRef::downgrade(&outer_wrapper_ref);
         outer_wrapper_ref
     }
 
-    fn create_with_middlewrapper(middle_cell_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn create_with_middlewrapper(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
         let outer_wrapper_ref = RcRef::new(OuterSCWrapper {
-            outer_middle_sc_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
-            inner_sc_data_storage: middle_cell_wrapper_ref.sc_data_storage.clone(),
+            outer_middle_sc_wrapper: RwCell::new(middle_sc_wrapper_ref.clone()),
+            inner_sc_data_storage: middle_sc_wrapper_ref.sc_data_storage.clone(),
         });
         // XXX TODO UTIL FN - REPEATED CODE
-        let mut middle_cell_wrapper_writer = middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap();
-        *middle_cell_wrapper_writer = RcRef::downgrade(&outer_wrapper_ref);
+        let mut middle_sc_wrapper_writer = middle_sc_wrapper_ref.outer_wrapper_ref.write().unwrap();
+        *middle_sc_wrapper_writer = RcRef::downgrade(&outer_wrapper_ref);
         outer_wrapper_ref
     }
 
-    fn update_sc_linkage(outer_cell_wrapper_ref: OuterCellWrapperRcRef, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) {
-        let middle_cell_wrapper_ref =
-            MiddleSCWrapper::create_with_next_middle_cell_wrapper_data(outer_cell_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone(), link1, link2);
+    fn update_sc_linkage(outer_sc_wrapper_ref: OuterCellWrapperRcRef, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) {
+        let middle_sc_wrapper_ref =
+            MiddleSCWrapper::create_with_next_middle_sc_wrapper_data(outer_sc_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone(), link1, link2);
         // XXX TBD RECONSIDER EXTRA REF CLONE HERE
-        let next_middle_cell_wrapper_ref = middle_cell_wrapper_ref.clone();
-        let mut next_middle_cell_wrapper_writer = next_middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap();
-        *next_middle_cell_wrapper_writer = RcRef::downgrade(&outer_cell_wrapper_ref);
-        let mut middle_cell_wrapper_writer = outer_cell_wrapper_ref.outer_middle_sc_wrapper.write().unwrap();
-        *middle_cell_wrapper_writer = middle_cell_wrapper_ref.clone();
+        let next_middle_sc_wrapper_ref = middle_sc_wrapper_ref.clone();
+        let mut next_middle_sc_wrapper_writer = next_middle_sc_wrapper_ref.outer_wrapper_ref.write().unwrap();
+        *next_middle_sc_wrapper_writer = RcRef::downgrade(&outer_sc_wrapper_ref);
+        let mut middle_sc_wrapper_writer = outer_sc_wrapper_ref.outer_middle_sc_wrapper.write().unwrap();
+        *middle_sc_wrapper_writer = middle_sc_wrapper_ref.clone();
     }
 
-    fn ref_middle_cell_wrapper_ref(middle_cell_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn ref_middle_sc_wrapper_ref(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
         // XXX TODO USE MATCH INSTEAD HERE
-        let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
+        let mut my_outer_wrapper_ref = middle_sc_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
-            OuterSCWrapper::create_with_middlewrapper(middle_cell_wrapper_ref)
+            OuterSCWrapper::create_with_middlewrapper(middle_sc_wrapper_ref)
         } else {
             my_outer_wrapper_ref.unwrap()
         }
@@ -224,12 +224,12 @@ impl MiddleSCWrapper {
         });
 
         *inner_sc_data_storage.peer_sc_linkage_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
-        *inner_sc_data_storage.inner_middle_cell_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
+        *inner_sc_data_storage.inner_middle_sc_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
 
         return middle_cw_ref;
     }
 
-    fn create_with_next_middle_cell_wrapper_data(
+    fn create_with_next_middle_sc_wrapper_data(
         next_middle_wrapper: MiddleSCWrapperRcRef,
         link1: Option<MiddleSCWrapperRcRef>,
         link2: Option<MiddleSCWrapperRcRef>,
@@ -245,7 +245,7 @@ impl MiddleSCWrapper {
             link2.clone(),
         )));
 
-        let inner_middle_wrapper = inner_sc_data_storage_ref.inner_middle_cell_wrapper_ref.read().unwrap().upgrade();
+        let inner_middle_wrapper = inner_sc_data_storage_ref.inner_middle_sc_wrapper_ref.read().unwrap().upgrade();
 
         // KEEP XXX XXX INFO IN SYNC HERE
         let mut cell_linkage_weak_ref_writer = inner_sc_data_storage_ref.peer_sc_linkage_ref.write().unwrap();
@@ -318,19 +318,19 @@ impl SCLinkageInfo {
             Some(m) => Some(m.sc_data_storage.clone()),
         };
         // XXX TBD UTIL FN ???s
-        let inner_middle_cell_wrapper_link1 = match middle_wrapper_link1 {
+        let inner_middle_sc_wrapper_link1 = match middle_wrapper_link1 {
             None => None,
-            Some(m) => m.sc_data_storage.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+            Some(m) => m.sc_data_storage.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
         };
-        let inner_middle_cell_wrapper_link2 = match middle_wrapper_link2 {
+        let inner_middle_sc_wrapper_link2 = match middle_wrapper_link2 {
             None => None,
-            Some(m) => m.sc_data_storage.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+            Some(m) => m.sc_data_storage.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
         };
         // XXX TODO NOTE: XXX XXX XXX
         RcRef::new(SCLinkageInfo {
             sc_data_storage: inner_sc_data_storage_ref,
-            linkage1: (linked_sc_data_storage_ref1, inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
-            linkage2: (linked_sc_data_storage_ref2, inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
+            linkage1: (linked_sc_data_storage_ref1, inner_middle_sc_wrapper_link1, keep_middle_wrapper_link1),
+            linkage2: (linked_sc_data_storage_ref2, inner_middle_sc_wrapper_link2, keep_middle_wrapper_link2),
         })
     }
 
@@ -353,7 +353,7 @@ impl InnerSCDataStorage {
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
             peer_sc_linkage_ref: RwCell::new(WeakRef::new()),
             peer_sc_linkage_middle_wrapper_ref: RwCell::new(WeakRef::new()),
-            inner_middle_cell_wrapper_ref: RwCell::new(WeakRef::new()),
+            inner_middle_sc_wrapper_ref: RwCell::new(WeakRef::new()),
         })
     }
 
@@ -385,11 +385,11 @@ impl SCLCursor {
         if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage1.1.clone();
-        match maybe_linked_middle_cell_wrapper_ref {
+        let maybe_linked_middle_sc_wrapper_ref = sc_linkage_info_ref.unwrap().linkage1.1.clone();
+        match maybe_linked_middle_sc_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterSCWrapper::ref_middle_cell_wrapper_ref(
-                middle_cell_wrapper_ref,
+            Some(middle_sc_wrapper_ref) => Some(SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::ref_middle_sc_wrapper_ref(
+                middle_sc_wrapper_ref,
             ))),
         }
     }
@@ -400,30 +400,30 @@ impl SCLCursor {
         if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage2.1.clone();
-        match maybe_linked_middle_cell_wrapper_ref {
+        let maybe_linked_middle_sc_wrapper_ref = sc_linkage_info_ref.unwrap().linkage2.1.clone();
+        match maybe_linked_middle_sc_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterSCWrapper::ref_middle_cell_wrapper_ref(
-                middle_cell_wrapper_ref,
+            Some(middle_sc_wrapper_ref) => Some(SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::ref_middle_sc_wrapper_ref(
+                middle_sc_wrapper_ref,
             ))),
         }
     }
 
     // XXX TBD SHOULD THIS TAKE &mut self ???
     pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLCursor>, link2: Option<SCLCursor>) {
-        let my_middle_cell_wrapper_ref = self.get_middle_cell_wrapper();
+        let my_middle_sc_wrapper_ref = self.get_middle_sc_wrapper();
 
-        my_middle_cell_wrapper_ref.update_cell_text_data(text1, text2);
+        my_middle_sc_wrapper_ref.update_cell_text_data(text1, text2);
 
         let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
         OuterSCWrapper::update_sc_linkage(
             my_outer_wrapper_ref,
             match link1 {
-                Some(r) => Some(r.get_middle_cell_wrapper()),
+                Some(r) => Some(r.get_middle_sc_wrapper()),
                 None => None,
             },
             match link2 {
-                Some(r) => Some(r.get_middle_cell_wrapper()),
+                Some(r) => Some(r.get_middle_sc_wrapper()),
                 None => None,
             },
         );
@@ -482,18 +482,18 @@ impl SCLCursor {
         dump
     }
 
-    fn get_middle_cell_wrapper(&self) -> MiddleSCWrapperRcRef {
+    fn get_middle_sc_wrapper(&self) -> MiddleSCWrapperRcRef {
         self.outer_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone()
     }
 
-    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
+    fn from_outer_sc_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
         SCLCursor { outer_wrapper_ref }
     }
 }
 
 pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
-    let x = SCLCursor::from_outer_cell_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
     x.update_data(text1, text2, None, None);
     x
 }
@@ -502,7 +502,7 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
     // XXX (NO NEED TO STORE LINK UNTIL UPDATING STORED DATA WITH THIS UGLY WORKAROUND)
     // XXX TODO USE UTIL FN HERE
-    let x = SCLCursor::from_outer_cell_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
 }
