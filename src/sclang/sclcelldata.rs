@@ -111,7 +111,9 @@ impl Drop for MiddleSCWrapper {
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
-        let maybe_next_middle_wrapper = self.next_middle_wrapper.read().unwrap();
+        // XXX XXX XXX
+        // let maybe_next_middle_wrapper = self.next_middle_wrapper.read().unwrap();
+        let maybe_next_middle_wrapper = self.first_inner_middle_wrapper.read().unwrap();
         if maybe_next_middle_wrapper.is_none() {
             return;
         }
