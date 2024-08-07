@@ -72,31 +72,31 @@ struct InnerSCDataStorage {
     inner_inner_middle_sc_wrapper_ref: WeakRefCell<MiddleSCWrapper>,
 }
 
-static drop_cell_count: RwCell<i32> = RwCell::new(0);
+static drop_sc_data_count: RwCell<i32> = RwCell::new(0);
 
 impl Drop for InnerSCDataStorage {
     fn drop(&mut self) {
         if is_debug_enabled() {
-            println!("DROP CELL DATA with info:");
+            println!("DROP SC DATA with stored info fields:");
             println!("- text 1: {}", self.text1.read().unwrap());
             println!("- text 2: {}", self.text2.read().unwrap());
         }
-        let mut x = drop_cell_count.write().unwrap();
+        let mut x = drop_sc_data_count.write().unwrap();
         *x = *x + 1;
         drop(x);
         if is_debug_enabled() {
-            println!("DROP CELL COUNT: {}", get_drop_cell_count());
+            println!("DROP SC DATA COUNT: {}", get_stat_drop_scl_data_count());
             println!("--- --- ---");
         }
     }
 }
 
-pub fn get_drop_cell_count() -> i32 {
-    drop_cell_count.read().unwrap().clone()
+pub fn get_stat_drop_scl_data_count() -> i32 {
+    drop_sc_data_count.read().unwrap().clone()
 }
 
-pub fn reset_drop_cell_count() {
-    let mut x = drop_cell_count.write().unwrap();
+pub fn reset_stat_drop_scl_data_count() {
+    let mut x = drop_sc_data_count.write().unwrap();
     *x = 0;
 }
 
@@ -350,7 +350,7 @@ impl MiddleSCWrapper {
     }
 
     // XXX TBD SHOULD THIS TAKE &mut self ???
-    fn update_cell_text_data(&self, text1: &str, text2: &str) {
+    fn update_sc_text_data(&self, text1: &str, text2: &str) {
         let mut xxx1 = self.sc_data_storage.text1.write().unwrap();
         *xxx1 = String::from(text1);
         let mut xxx2 = self.sc_data_storage.text2.write().unwrap();
@@ -401,12 +401,12 @@ impl SCLinkageInfo {
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_middle_wrapper_link1(&self) -> Option<MiddleSCWrapperRcRef> {
+    fn get_inner_middle_wrapper_link1(&self) -> Option<MiddleSCWrapperRcRef> {
         self.linkage1.1.clone()
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_middle_wrapper_link2(&self) -> Option<MiddleSCWrapperRcRef> {
+    fn get_inner_middle_wrapper_link2(&self) -> Option<MiddleSCWrapperRcRef> {
         self.linkage2.1.clone()
     }
 }
@@ -479,7 +479,8 @@ impl SCLCursor {
     pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLCursor>, link2: Option<SCLCursor>) {
         let my_middle_sc_wrapper_ref = self.get_middle_sc_wrapper();
 
-        my_middle_sc_wrapper_ref.update_cell_text_data(text1, text2);
+        my_middle_sc_wrapper_ref.update_sc_text_data(text1, text2);
+
 
         let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
         OuterSCWrapper::update_sc_linkage(
@@ -557,7 +558,7 @@ impl SCLCursor {
     }
 }
 
-pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
+pub fn create_scl_data_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     // XXX WITH QUICK & UGLY WORKAROUND APPLIED MULTIPLE TIMES FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE ETC ETC ETC
     let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_sc_data(text1, text2, None, None));
     x.update_data(text1, text2, None, None);
@@ -565,7 +566,7 @@ pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     x
 }
 
-pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
+pub fn create_scl_data_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
     // XXX (NO NEED TO STORE LINK UNTIL UPDATING STORED DATA WITH THIS UGLY WORKAROUND)
     // XXX TODO USE UTIL FN HERE
