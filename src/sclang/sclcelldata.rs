@@ -163,7 +163,7 @@ impl OuterCellWrapper {
         outer_wrapper_ref
     }
 
-    fn create_with_middlewrapper(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn create_with_outer_middle_wrapper(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
             outer_middle_cell_wrapper: RwCell::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -192,7 +192,7 @@ impl OuterCellWrapper {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
-            OuterCellWrapper::create_with_middlewrapper(middle_cell_wrapper_ref)
+            OuterCellWrapper::create_with_outer_middle_wrapper(middle_cell_wrapper_ref)
         } else {
             my_outer_wrapper_ref.unwrap()
         }
