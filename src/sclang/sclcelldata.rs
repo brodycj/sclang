@@ -67,31 +67,31 @@ struct InnerSCInfoStorage {
     inner_middle_cell_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
 }
 
-static drop_cell_count: RwCell<i32> = RwCell::new(0);
+static drop_sc_data_count: RwCell<i32> = RwCell::new(0);
 
 impl Drop for InnerSCInfoStorage {
     fn drop(&mut self) {
         if is_debug_enabled() {
-            println!("DROP CELL DATA with info:");
+            println!("DROP SC DATA with stored info fields:");
             println!("- text 1: {}", self.text1.read().unwrap());
             println!("- text 2: {}", self.text2.read().unwrap());
         }
-        let mut x = drop_cell_count.write().unwrap();
+        let mut x = drop_sc_data_count.write().unwrap();
         *x = *x + 1;
         drop(x);
         if is_debug_enabled() {
-            println!("DROP CELL COUNT: {}", get_drop_cell_count());
+            println!("DROP SC DATA COUNT: {}", get_stat_drop_sc_data_count());
             println!("--- --- ---");
         }
     }
 }
 
-pub fn get_drop_cell_count() -> i32 {
-    drop_cell_count.read().unwrap().clone()
+pub fn get_stat_drop_sc_data_count() -> i32 {
+    drop_sc_data_count.read().unwrap().clone()
 }
 
-pub fn reset_drop_cell_count() {
-    let mut x = drop_cell_count.write().unwrap();
+pub fn reset_stat_drop_sc_data_count() {
+    let mut x = drop_sc_data_count.write().unwrap();
     *x = 0;
 }
 

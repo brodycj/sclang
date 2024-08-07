@@ -213,12 +213,12 @@ fn test_circular_2_records() {
     let mut cl;
     let mut x;
 
-    sclcelldata::reset_drop_cell_count();
+    sclcelldata::reset_stat_drop_sc_data_count();
 
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -370,7 +370,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -426,7 +426,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -435,7 +435,7 @@ fn test_circular_2_records() {
 fn test_circular_5_records() {
     use expect_test::expect;
 
-    sclcelldata::reset_drop_cell_count();
+    sclcelldata::reset_stat_drop_sc_data_count();
 
     let mut map: SCLDataMap = HashMap::new();
     let m = &mut map;
@@ -446,7 +446,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -642,7 +642,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-b)"#;
@@ -680,7 +680,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-c)"#;
@@ -817,7 +817,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-e)"#;
@@ -855,7 +855,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         5
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -870,7 +870,7 @@ fn test_non_circular_2_records() {
     let mut cl;
     let mut x;
 
-    sclcelldata::reset_drop_cell_count();
+    sclcelldata::reset_stat_drop_sc_data_count();
 
     cl = r#"(store-data data-1 ("first text" "second text"))"#;
     x = expect![[r#"
@@ -959,7 +959,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-1)"#;
@@ -972,7 +972,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-2)"#;
@@ -985,6 +985,6 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sclcelldata::get_stat_drop_sc_data_count();
     x.assert_debug_eq(&drop_cell_count);
 }

@@ -499,46 +499,46 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "a-text-1"
 - text 2: "a-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA with stored info fields:
 - text 1: "a-text-1"
 - text 2: "a-text-2"
-DROP CELL COUNT: 1
+DROP SC DATA COUNT: 1
 --- --- ---
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "b-text-1"
 - text 2: "b-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA with stored info fields:
 - text 1: "b-text-1"
 - text 2: "b-text-2"
-DROP CELL COUNT: 2
+DROP SC DATA COUNT: 2
 --- --- ---
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "c-text-1"
 - text 2: "c-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA with stored info fields:
 - text 1: "c-text-1"
 - text 2: "c-text-2"
-DROP CELL COUNT: 3
+DROP SC DATA COUNT: 3
 --- --- ---
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "d-text-1"
 - text 2: "d-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA with stored info fields:
 - text 1: "d-text-1"
 - text 2: "d-text-2"
-DROP CELL COUNT: 4
+DROP SC DATA COUNT: 4
 --- --- ---
 DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "e-text-1"
 - text 2: "e-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA with stored info fields:
 - text 1: "e-text-1"
 - text 2: "e-text-2"
-DROP CELL COUNT: 5
+DROP SC DATA COUNT: 5
 --- --- ---
 DROPPED SYMBOL: data-node-e
 
