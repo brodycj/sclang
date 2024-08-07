@@ -155,8 +155,8 @@ impl Drop for MiddleSCWrapper {
 }
 
 impl OuterSCWrapper {
-    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> OuterSCWrapperRcRef {
-        let middle_sc_wrapper_ref = MiddleSCWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
+    fn create_with_sc_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> OuterSCWrapperRcRef {
+        let middle_sc_wrapper_ref = MiddleSCWrapper::create_with_inner_sc_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterSCWrapper {
             outer_middle_sc_wrapper: RwCell::new(middle_sc_wrapper_ref.clone()),
             inner_sc_data_storage: middle_sc_wrapper_ref.sc_data_storage.clone(),
@@ -201,7 +201,7 @@ impl OuterSCWrapper {
 }
 
 impl MiddleSCWrapper {
-    fn create_with_inner_cell_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> MiddleSCWrapperRcRef {
+    fn create_with_inner_sc_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> MiddleSCWrapperRcRef {
         // XXX TBD MUTABLE - ??? ??? ???
         let inner_sc_data_storage = InnerSCDataStorage::create_with_inner_text_fields(text1, text2);
 
@@ -288,7 +288,7 @@ impl MiddleSCWrapper {
     }
 
     // XXX TBD SHOULD THIS TAKE &mut self ???
-    fn update_cell_text_data(&self, text1: &str, text2: &str) {
+    fn update_sc_text_data(&self, text1: &str, text2: &str) {
         let mut xxx1 = self.sc_data_storage.text1.write().unwrap();
         *xxx1 = String::from(text1);
         let mut xxx2 = self.sc_data_storage.text2.write().unwrap();
@@ -417,7 +417,7 @@ impl SCLCursor {
     pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLCursor>, link2: Option<SCLCursor>) {
         let my_middle_sc_wrapper_ref = self.get_middle_sc_wrapper();
 
-        my_middle_sc_wrapper_ref.update_cell_text_data(text1, text2);
+        my_middle_sc_wrapper_ref.update_sc_text_data(text1, text2);
 
         let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
         OuterSCWrapper::update_sc_linkage(
@@ -497,7 +497,7 @@ impl SCLCursor {
 
 pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
-    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_sc_data(text1, text2, None, None));
     x.update_data(text1, text2, None, None);
     x
 }
@@ -506,7 +506,7 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
     // XXX (NO NEED TO STORE LINK UNTIL UPDATING STORED DATA WITH THIS UGLY WORKAROUND)
     // XXX TODO USE UTIL FN HERE
-    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_sc_data(text1, text2, None, None));
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
 }
