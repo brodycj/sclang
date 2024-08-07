@@ -199,6 +199,8 @@ impl OuterSCWrapper {
         *next_middle_sc_wrapper_writer = RcRef::downgrade(&outer_sc_wrapper_ref);
         let mut middle_sc_wrapper_writer = outer_sc_wrapper_ref.outer_middle_sc_wrapper.write().unwrap();
         *middle_sc_wrapper_writer = middle_sc_wrapper_ref.clone();
+        // XXX XXX EPLAIN THIS - REMOVES STORAGE OF EXTRA NEXT MIDDLE WRAPPERS - SHOULD AVOID XXX XXX XXX RESOURCE ISSUES
+        *middle_sc_wrapper_ref.next_middle_wrapper.write().unwrap() = outer_sc_wrapper_ref.inner_sc_data_storage.peer_sc_linkage_middle_wrapper_ref.read().unwrap().clone().upgrade().unwrap().first_inner_middle_wrapper.read().unwrap().clone();
     }
 
     fn ref_middle_sc_wrapper_ref(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterSCWrapperRcRef {
