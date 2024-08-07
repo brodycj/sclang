@@ -39,6 +39,7 @@ struct MiddleCellWrapper {
     // XXX TODO "next middle wrapper" ref may lead to retaining excessive middle wrapper objects if SC data is updated over & over (possible memory leakage)
     // XXX TODO LIKELY NEED BETTER SOLUTION FOR THIS
     next_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
+    inner_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
 }
 
 // XXX TBD RECONSIDER NAMING ??? ???
@@ -58,6 +59,7 @@ struct InnerSCInfoStorage {
     peer_sc_linkage_ref: WeakRefCell<PeerSCLinkageInfo>,
     // XXX TRACK WHERE THE STRONG PEER SC LINKAGE REF IS STORED - XXX TODO IMPROVE NAMING & CLARIFY DESCRIPTION OF THIS FIELD
     peer_sc_linkage_middle_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
+    // XXX TBD RECONSIDER KEEPING THIS STATE - ??? ??? ???
     inner_middle_cell_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
 }
 
@@ -213,6 +215,7 @@ impl MiddleCellWrapper {
             peer_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
             next_middle_wrapper: RwCell::new(None),
+            inner_middle_wrapper: RwCell::new(None),
         });
 
         *inner_sc_info_storage.peer_sc_linkage_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
@@ -233,6 +236,8 @@ impl MiddleCellWrapper {
         // XXX TODO RECONSIDER EXTRA REF CLONE HERE
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
 
+        let inner_middle_wrapper = inner_sc_info_storage_ref.inner_middle_cell_wrapper_ref.read().unwrap().upgrade();
+
         // KEEP XXX XXX INFO IN SYNC HERE
         let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.peer_sc_linkage_ref.write().unwrap();
         *cell_linkage_weak_ref_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
@@ -242,6 +247,7 @@ impl MiddleCellWrapper {
             peer_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwLock::new(next_middle_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
             next_middle_wrapper: RwCell::new(Some(next_middle_wrapper.clone())),
+            inner_middle_wrapper: RwCell::new(inner_middle_wrapper),
         });
 
         let old_linkage_strong_ref_wrapper = inner_sc_info_storage_ref.peer_sc_linkage_middle_wrapper_ref.read().unwrap().upgrade().clone();
