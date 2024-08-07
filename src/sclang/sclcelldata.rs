@@ -84,17 +84,17 @@ impl Drop for InnerSCDataStorage {
         *x = *x + 1;
         drop(x);
         if is_debug_enabled() {
-            println!("DROP SC DATA COUNT: {}", get_stat_drop_sc_data_count());
+            println!("DROP SC DATA COUNT: {}", get_stat_drop_scl_data_count());
             println!("--- --- ---");
         }
     }
 }
 
-pub fn get_stat_drop_sc_data_count() -> i32 {
+pub fn get_stat_drop_scl_data_count() -> i32 {
     drop_sc_data_count.read().unwrap().clone()
 }
 
-pub fn reset_stat_drop_sc_data_count() {
+pub fn reset_stat_drop_scl_data_count() {
     let mut x = drop_sc_data_count.write().unwrap();
     *x = 0;
 }
@@ -495,14 +495,14 @@ impl SCLCursor {
     }
 }
 
-pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
+pub fn create_scl_data_with_text_only(text1: &str, text2: &str) -> SCLCursor {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
     let x = SCLCursor::from_outer_sc_wrapper(OuterSCWrapper::create_with_sc_data(text1, text2, None, None));
     x.update_data(text1, text2, None, None);
     x
 }
 
-pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
+pub fn create_scl_data_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
     // XXX (NO NEED TO STORE LINK UNTIL UPDATING STORED DATA WITH THIS UGLY WORKAROUND)
     // XXX TODO USE UTIL FN HERE
