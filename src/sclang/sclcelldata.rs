@@ -49,6 +49,10 @@ struct MiddleSCWrapper {
 struct SCLinkageInfo {
     // XXX TBD RECONSIDER WHAT TO STORE HERE
     sc_data_storage: InnerSCDataStorageRcRef,
+    // XXX XXX STORING THE FOLLOWING FOR EACH LINKAGE TUPLE:
+    // - inner SC data storage - strong reference
+    // - inner middle wrapper - strong reference
+    // - outer middle wrapper at the time this was made - strong reference
     linkage1: (Option<InnerSCDataStorageRcRef>, Option<MiddleSCWrapperRcRef>, Option<MiddleSCWrapperRcRef>),
     linkage2: (Option<InnerSCDataStorageRcRef>, Option<MiddleSCWrapperRcRef>, Option<MiddleSCWrapperRcRef>),
 }
