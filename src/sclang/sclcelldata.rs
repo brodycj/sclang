@@ -52,7 +52,7 @@ struct SCLinkageInfo {
     // XXX XXX STORING THE FOLLOWING FOR EACH LINKAGE TUPLE:
     // - inner SC data storage - strong reference
     // - inner middle wrapper - strong reference
-    // - outer middle wrapper at the time this was made - strong reference
+    // - XXX XXX middle wrapper - XXX TBD ??? ??? ??? - strong reference
     linkage1: (Option<InnerSCDataStorageRcRef>, Option<MiddleSCWrapperRcRef>, Option<MiddleSCWrapperRcRef>),
     linkage2: (Option<InnerSCDataStorageRcRef>, Option<MiddleSCWrapperRcRef>, Option<MiddleSCWrapperRcRef>),
 }
@@ -339,12 +339,12 @@ impl SCLinkageInfo {
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_middle_wrapper_link1(&self) -> Option<MiddleSCWrapperRcRef> {
+    fn get_inner_middle_wrapper_link1(&self) -> Option<MiddleSCWrapperRcRef> {
         self.linkage1.1.clone()
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_middle_wrapper_link2(&self) -> Option<MiddleSCWrapperRcRef> {
+    fn get_inner_middle_wrapper_link2(&self) -> Option<MiddleSCWrapperRcRef> {
         self.linkage2.1.clone()
     }
 }
