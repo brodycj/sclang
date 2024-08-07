@@ -480,16 +480,10 @@ pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
 }
 
 pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
-    // XXX TODO USE UTIL FN HERE
-    let cw = OuterCellWrapper::create_with_cell_data(
-        text1,
-        text2,
-        Some(link1.clone().outer_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().outer_wrapper_ref.outer_middle_cell_wrapper.read().unwrap().clone()),
-    );
-
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL WRAPPER DROP FUNCTION ABOVE
-    let x = SCLCursor::from_outer_cell_wrapper(cw);
+    // XXX (NO NEED TO STORE LINK UNTIL UPDATING STORED DATA WITH THIS UGLY WORKAROUND)
+    // XXX TODO USE UTIL FN HERE
+    let x = SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
 }
