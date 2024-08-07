@@ -372,8 +372,8 @@ impl SCLinkageInfo {
         middle_wrapper_link2: Option<MiddleSCWrapperRcRef>,
     ) -> RcRef<SCLinkageInfo> {
         // XXX TBD ARE THESE SEPARATE REF CLONES REALLY NEEDED ??? ??? ???
-        let keep_middle_wrapper_link1 = middle_wrapper_link1.clone();
-        let keep_middle_wrapper_link2 = middle_wrapper_link2.clone();
+        // let keep_middle_wrapper_link1 = middle_wrapper_link1.clone();
+        // let keep_middle_wrapper_link2 = middle_wrapper_link2.clone();
         // XXX TBD STORE THESE FOR NOW ... ... XXX TBD ??? ??? / XXX XXX SHOULD COMBINE MATCH STATEMENTS TOGETHER IF PRACTICAL
         let linked_sc_data_storage_ref1 = match middle_wrapper_link1.clone() {
             None => None,
@@ -384,19 +384,28 @@ impl SCLinkageInfo {
             Some(m) => Some(m.sc_data_storage.clone()),
         };
         // XXX TBD UTIL FN ???s
-        let inner_inner_middle_sc_wrapper_link1 = match middle_wrapper_link1 {
+        let inner_inner_middle_sc_wrapper_link1 = match middle_wrapper_link1.clone() {
             None => None,
             Some(m) => m.sc_data_storage.inner_inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
         };
-        let inner_inner_middle_sc_wrapper_link2 = match middle_wrapper_link2 {
+        let inner_inner_middle_sc_wrapper_link2 = match middle_wrapper_link2.clone() {
             None => None,
             Some(m) => m.sc_data_storage.inner_inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
+        };
+        // XXX TODO FIX NAMING XXX
+        let xx1 = match middle_wrapper_link1 {
+            None => None,
+            Some(m) => m.sc_data_storage.peer_sc_linkage_middle_wrapper_ref.read().unwrap().upgrade(),
+        };
+        let xx2 = match middle_wrapper_link2 {
+            None => None,
+            Some(m) => m.sc_data_storage.peer_sc_linkage_middle_wrapper_ref.read().unwrap().upgrade(),
         };
         // XXX TODO NOTE: XXX XXX XXX
         RcRef::new(SCLinkageInfo {
             sc_data_storage: inner_sc_data_storage_ref,
-            linkage1: (linked_sc_data_storage_ref1, inner_inner_middle_sc_wrapper_link1, keep_middle_wrapper_link1),
-            linkage2: (linked_sc_data_storage_ref2, inner_inner_middle_sc_wrapper_link2, keep_middle_wrapper_link2),
+            linkage1: (linked_sc_data_storage_ref1, inner_inner_middle_sc_wrapper_link1, xx1),
+            linkage2: (linked_sc_data_storage_ref2, inner_inner_middle_sc_wrapper_link2, xx2),
         })
     }
 
