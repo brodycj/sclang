@@ -53,8 +53,9 @@ struct InnerSCInfoStorage {
     text2: RcRef<RwCell<String>>,
     outer_wrapper_ref: WeakRefCell<OuterCellWrapper>,
     // XXX TBD NAMING OF THIS ??? ???
-    peer_sc_linkage_info_weak_ref: WeakRefCell<PeerSCLinkageInfo>,
-    linkage_strong_ref_wrapper: WeakRefCell<MiddleCellWrapper>,
+    peer_sc_linkage_ref: WeakRefCell<PeerSCLinkageInfo>,
+    // XXX TRACK WHERE THE STRONG PEER SC LINKAGE REF IS STORED - XXX TODO IMPROVE NAMING & CLARIFY DESCRIPTION OF THIS FIELD
+    peer_sc_linkage_middle_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
     inner_middle_cell_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
 }
 
@@ -136,7 +137,7 @@ impl Drop for MiddleCellWrapper {
 
         *next_middle_wrapper_ref.peer_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
 
-        *self.inner_sc_info_storage.peer_sc_linkage_info_weak_ref.write().unwrap() = RcRef::downgrade(&inner_sc_linkage_ref);
+        *self.inner_sc_info_storage.peer_sc_linkage_ref.write().unwrap() = RcRef::downgrade(&inner_sc_linkage_ref);
     }
 }
 
@@ -202,7 +203,7 @@ impl MiddleCellWrapper {
 
         // KEEP XXX XXX INFO IN SYNC HERE
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
-        let mut cell_linkage_weak_writer = inner_sc_info_storage_ref.peer_sc_linkage_info_weak_ref.write().unwrap();
+        let mut cell_linkage_weak_writer = inner_sc_info_storage_ref.peer_sc_linkage_ref.write().unwrap();
         *cell_linkage_weak_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
         let middle_cw_ref = RcRef::new(MiddleCellWrapper {
@@ -212,7 +213,7 @@ impl MiddleCellWrapper {
             next_middle_wrapper: RwCell::new(None),
         });
 
-        *inner_sc_info_storage.linkage_strong_ref_wrapper.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
+        *inner_sc_info_storage.peer_sc_linkage_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
         *inner_sc_info_storage.inner_middle_cell_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_cw_ref.clone());
 
         return middle_cw_ref;
@@ -231,7 +232,7 @@ impl MiddleCellWrapper {
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
 
         // KEEP XXX XXX INFO IN SYNC HERE
-        let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.peer_sc_linkage_info_weak_ref.write().unwrap();
+        let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.peer_sc_linkage_ref.write().unwrap();
         *cell_linkage_weak_ref_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
         let middle_wrapper_ref = RcRef::new(MiddleCellWrapper {
@@ -241,8 +242,8 @@ impl MiddleCellWrapper {
             next_middle_wrapper: RwCell::new(Some(next_middle_wrapper.clone())),
         });
 
-        let old_linkage_strong_ref_wrapper = inner_sc_info_storage_ref.linkage_strong_ref_wrapper.read().unwrap().upgrade().clone();
-        *inner_sc_info_storage_ref.linkage_strong_ref_wrapper.write().unwrap() = RcRef::downgrade(&middle_wrapper_ref.clone());
+        let old_linkage_strong_ref_wrapper = inner_sc_info_storage_ref.peer_sc_linkage_middle_wrapper_ref.read().unwrap().upgrade().clone();
+        *inner_sc_info_storage_ref.peer_sc_linkage_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_wrapper_ref.clone());
 
         // clear out XXX XXX
         if old_linkage_strong_ref_wrapper.is_some() {
@@ -323,8 +324,8 @@ impl InnerSCInfoStorage {
             text1: RcRef::new(RwCell::new(String::from(text1))),
             text2: RcRef::new(RwCell::new(String::from(text2))),
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
-            peer_sc_linkage_info_weak_ref: RwCell::new(WeakRef::new()),
-            linkage_strong_ref_wrapper: RwCell::new(WeakRef::new()),
+            peer_sc_linkage_ref: RwCell::new(WeakRef::new()),
+            peer_sc_linkage_middle_wrapper_ref: RwCell::new(WeakRef::new()),
             inner_middle_cell_wrapper_ref: RwCell::new(WeakRef::new()),
         })
     }
@@ -353,13 +354,7 @@ impl SCLCursor {
 
     pub fn get_link1(&self) -> Option<SCLCursor> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
-        let sc_linkage_info_ref = self
-            .outer_wrapper_ref
-            .inner_sc_info_storage_ref
-            .peer_sc_linkage_info_weak_ref
-            .read()
-            .unwrap()
-            .upgrade();
+        let sc_linkage_info_ref = self.outer_wrapper_ref.inner_sc_info_storage_ref.peer_sc_linkage_ref.read().unwrap().upgrade();
         if sc_linkage_info_ref.is_none() {
             return None;
         };
@@ -374,13 +369,7 @@ impl SCLCursor {
 
     pub fn get_link2(&self) -> Option<SCLCursor> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
-        let sc_linkage_info_ref = self
-            .outer_wrapper_ref
-            .inner_sc_info_storage_ref
-            .peer_sc_linkage_info_weak_ref
-            .read()
-            .unwrap()
-            .upgrade();
+        let sc_linkage_info_ref = self.outer_wrapper_ref.inner_sc_info_storage_ref.peer_sc_linkage_ref.read().unwrap().upgrade();
         if sc_linkage_info_ref.is_none() {
             return None;
         };
