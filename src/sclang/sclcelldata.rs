@@ -117,20 +117,20 @@ impl Drop for MiddleCellWrapper {
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
         // XXX TBD NOTE: THIS LINKED INFO STORAGE FETCH IS SIMPLIFIED BY STORING THIS INFO IN THE LINKAGE - XXX TBD IS THIS INFO WORTH STORING ??? ??? ????
-        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.unwrap();
-        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage.clone().unwrap().linkage2.clone().0.unwrap();
+        let linked_sc_info_storage_ref1 = maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.unwrap();
+        let linked_sc_info_storage_ref2 = maybe_inner_sc_linkage.clone().unwrap().linkage2.clone().0.unwrap();
 
         let inner_sc_linkage_ref = RcRef::new(PeerSCLinkageInfo {
             // XXX TODO UTILITY FN
             linkage1: (
-                Some(inner_sc_info_storage_link1.clone()),
-                inner_sc_info_storage_link1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
-                inner_sc_info_storage_link1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                Some(linked_sc_info_storage_ref1.clone()),
+                linked_sc_info_storage_ref1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_info_storage_ref1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
             ),
             linkage2: (
-                Some(inner_sc_info_storage_link2.clone()),
-                inner_sc_info_storage_link2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
-                inner_sc_info_storage_link2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                Some(linked_sc_info_storage_ref2.clone()),
+                linked_sc_info_storage_ref2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
+                linked_sc_info_storage_ref2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
             ),
         });
 
@@ -282,11 +282,11 @@ impl PeerSCLinkageInfo {
         let keep_middle_wrapper_link1 = link1.clone();
         let keep_middle_wrapper_link2 = link2.clone();
         // XXX TBD STORE THESE FOR NOW ... ... XXX TBD ??? ??? / XXX XXX SHOULD COMBINE MATCH STATEMENTS TOGETHER IF PRACTICAL
-        let inner_sc_info_storage_linkage1 = match link1.clone() {
+        let linked_sc_info_storage_ref1 = match link1.clone() {
             None => None,
             Some(m) => Some(m.inner_sc_info_storage.clone()),
         };
-        let inner_sc_info_storage_linkage2 = match link2.clone() {
+        let linked_sc_info_storage_ref2 = match link2.clone() {
             None => None,
             Some(m) => Some(m.inner_sc_info_storage.clone()),
         };
@@ -301,8 +301,8 @@ impl PeerSCLinkageInfo {
         };
         // XXX TODO NOTE: XXX XXX XXX
         RcRef::new(PeerSCLinkageInfo {
-            linkage1: (inner_sc_info_storage_linkage1, inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
-            linkage2: (inner_sc_info_storage_linkage2, inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
+            linkage1: (linked_sc_info_storage_ref1, inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
+            linkage2: (linked_sc_info_storage_ref2, inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
         })
     }
 
