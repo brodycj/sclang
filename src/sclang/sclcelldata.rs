@@ -39,7 +39,8 @@ struct MiddleCellWrapper {
     // XXX TODO "next middle wrapper" ref may lead to retaining excessive middle wrapper objects if SC data is updated over & over (possible memory leakage)
     // XXX TODO LIKELY NEED BETTER SOLUTION FOR THIS
     next_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
-    prev_middle_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
+    // XXX TBD RECONSIDER WHAT STATE TO KEEP HERE - ??? ??? ???
+    // extra_prev_middle_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
     // XXX TBD RECONSIDER KEEPING THIS STATE HERE - ??? ??? ???
     inner_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
 }
@@ -226,7 +227,7 @@ impl MiddleCellWrapper {
             peer_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
             next_middle_wrapper: RwCell::new(None),
-            prev_middle_wrapper_ref: RwCell::new(WeakRef::new()),
+            // extra_prev_middle_wrapper_ref: RwCell::new(WeakRef::new()),
             inner_middle_wrapper: RwCell::new(None),
         });
 
@@ -262,7 +263,7 @@ impl MiddleCellWrapper {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             peer_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwLock::new(next_middle_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
-            prev_middle_wrapper_ref: RwLock::new(WeakRef::new()),
+            // extra_prev_middle_wrapper_ref: RwLock::new(WeakRef::new()),
             next_middle_wrapper: RwCell::new(Some(next_middle_wrapper.clone())),
             inner_middle_wrapper: RwCell::new(inner_middle_wrapper),
         });
@@ -275,8 +276,9 @@ impl MiddleCellWrapper {
             *old_linkage_strong_ref_wrapper.unwrap().peer_sc_linkage_info_strong_ref.write().unwrap() = None;
         }
 
+        // XXX TBD FUTURE CONSIDERATION ??? ??? ???
         // UPDATE XXX XXX XXX
-        *next_middle_wrapper.clone().prev_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_wrapper_ref);
+        // *next_middle_wrapper.clone().extra_prev_middle_wrapper_ref.write().unwrap() = RcRef::downgrade(&middle_wrapper_ref);
 
         middle_wrapper_ref
     }
