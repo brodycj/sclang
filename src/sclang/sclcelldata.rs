@@ -42,10 +42,8 @@ struct MiddleCellWrapper {
 // XXX TBD RECONSIDER NAMING ??? ???
 struct PeerSCLinkageInfo {
     // XXX TBD RECONSIDER WHAT TO STORE HERE
-    // link1: Option<(MiddleCellWrapperRcRef, MiddleCellWrapperRcRef)>,
-    // link2: Option<(MiddleCellWrapperRcRef, MiddleCellWrapperRcRef)>,
-    linkage1: (Option<MiddleCellWrapperRcRef>, Option<MiddleCellWrapperRcRef>),
-    linkage2: (Option<MiddleCellWrapperRcRef>, Option<MiddleCellWrapperRcRef>),
+    linkage1: (Option<InnerSCInfoStorageRcRef>, Option<MiddleCellWrapperRcRef>, Option<MiddleCellWrapperRcRef>),
+    linkage2: (Option<InnerSCInfoStorageRcRef>, Option<MiddleCellWrapperRcRef>, Option<MiddleCellWrapperRcRef>),
 }
 
 type InnerSCInfoStorageRcRef = RcRef<InnerSCInfoStorage>;
@@ -118,33 +116,19 @@ impl Drop for MiddleCellWrapper {
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
-        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage
-            .clone()
-            .unwrap()
-            .linkage1
-            .clone()
-            .0
-            .unwrap()
-            .inner_sc_info_storage
-            .clone();
-
-        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage
-            .clone()
-            .unwrap()
-            .linkage2
-            .clone()
-            .0
-            .unwrap()
-            .inner_sc_info_storage
-            .clone();
+        // XXX TBD NOTE: THIS LINKED INFO STORAGE FETCH IS SIMPLIFIED BY STORING THIS INFO IN THE LINKAGE - XXX TBD IS THIS INFO WORTH STORING ??? ??? ????
+        let inner_sc_info_storage_link1 = maybe_inner_sc_linkage.clone().unwrap().linkage1.clone().0.unwrap();
+        let inner_sc_info_storage_link2 = maybe_inner_sc_linkage.clone().unwrap().linkage2.clone().0.unwrap();
 
         let inner_sc_linkage_ref = RcRef::new(PeerSCLinkageInfo {
             // XXX TODO UTILITY FN
             linkage1: (
+                Some(inner_sc_info_storage_link1.clone()),
                 inner_sc_info_storage_link1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
                 inner_sc_info_storage_link1.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
             ),
             linkage2: (
+                Some(inner_sc_info_storage_link2.clone()),
                 inner_sc_info_storage_link2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
                 inner_sc_info_storage_link2.inner_middle_cell_wrapper_ref.read().unwrap().upgrade(),
             ),
@@ -297,6 +281,15 @@ impl PeerSCLinkageInfo {
         // NEED TO KEEP THESE FOR XXX XXX XXX
         let keep_middle_wrapper_link1 = link1.clone();
         let keep_middle_wrapper_link2 = link2.clone();
+        // XXX TBD STORE THESE FOR NOW ... ... XXX TBD ??? ??? / XXX XXX SHOULD COMBINE MATCH STATEMENTS TOGETHER IF PRACTICAL
+        let inner_sc_info_storage_linkage1 = match link1.clone() {
+            None => None,
+            Some(m) => Some(m.inner_sc_info_storage.clone()),
+        };
+        let inner_sc_info_storage_linkage2 = match link2.clone() {
+            None => None,
+            Some(m) => Some(m.inner_sc_info_storage.clone()),
+        };
         // XXX TBD UTIL FN ???s
         let inner_middle_cell_wrapper_link1 = match link1 {
             None => None,
@@ -308,19 +301,19 @@ impl PeerSCLinkageInfo {
         };
         // XXX TODO NOTE: XXX XXX XXX
         RcRef::new(PeerSCLinkageInfo {
-            linkage1: (inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
-            linkage2: (inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
+            linkage1: (inner_sc_info_storage_linkage1, inner_middle_cell_wrapper_link1, keep_middle_wrapper_link1),
+            linkage2: (inner_sc_info_storage_linkage2, inner_middle_cell_wrapper_link2, keep_middle_wrapper_link2),
         })
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
     fn get_middle_wrapper_link1(&self) -> Option<MiddleCellWrapperRcRef> {
-        self.linkage1.0.clone()
+        self.linkage1.1.clone()
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
     fn get_middle_wrapper_link2(&self) -> Option<MiddleCellWrapperRcRef> {
-        self.linkage2.0.clone()
+        self.linkage2.1.clone()
     }
 }
 
@@ -370,7 +363,7 @@ impl SCLCursor {
         if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage1.0.clone();
+        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage1.1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
             Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
@@ -391,7 +384,7 @@ impl SCLCursor {
         if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage2.0.clone();
+        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().linkage2.1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
             Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
