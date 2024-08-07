@@ -139,12 +139,12 @@ impl Drop for MiddleSCWrapper {
             linkage1: (
                 Some(linked_sc_data_storage_ref1.clone()),
                 linked_sc_data_storage_ref1.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
-                linked_sc_data_storage_ref1.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
+                None,
             ),
             linkage2: (
                 Some(linked_sc_data_storage_ref2.clone()),
                 linked_sc_data_storage_ref2.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
-                linked_sc_data_storage_ref2.inner_middle_sc_wrapper_ref.read().unwrap().upgrade(),
+                None,
             ),
         });
 
