@@ -3,10 +3,10 @@ use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
 pub struct SCLCursor {
-    outer_wrapper_ref: OuterCellWrapperRcRef,
+    outer_wrapper_ref: OuterSCWrapperRcRef,
 }
 
-type OuterCellWrapperRcRef = RcRef<OuterSCWrapper>;
+type OuterSCWrapperRcRef = RcRef<OuterSCWrapper>;
 
 // XXX TODO EXPLAIN RATIONALE FOR THESE PRIVATE TYPE ALIASES
 type RwCell<T> = RwLock<T>;
@@ -155,7 +155,7 @@ impl Drop for MiddleSCWrapper {
 }
 
 impl OuterSCWrapper {
-    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> OuterCellWrapperRcRef {
+    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) -> OuterSCWrapperRcRef {
         let middle_sc_wrapper_ref = MiddleSCWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterSCWrapper {
             outer_middle_sc_wrapper: RwCell::new(middle_sc_wrapper_ref.clone()),
@@ -167,7 +167,7 @@ impl OuterSCWrapper {
         outer_wrapper_ref
     }
 
-    fn create_with_middlewrapper(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn create_with_middlewrapper(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterSCWrapperRcRef {
         let outer_wrapper_ref = RcRef::new(OuterSCWrapper {
             outer_middle_sc_wrapper: RwCell::new(middle_sc_wrapper_ref.clone()),
             inner_sc_data_storage: middle_sc_wrapper_ref.sc_data_storage.clone(),
@@ -178,7 +178,7 @@ impl OuterSCWrapper {
         outer_wrapper_ref
     }
 
-    fn update_sc_linkage(outer_sc_wrapper_ref: OuterCellWrapperRcRef, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) {
+    fn update_sc_linkage(outer_sc_wrapper_ref: OuterSCWrapperRcRef, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) {
         let middle_sc_wrapper_ref =
             MiddleSCWrapper::create_with_next_middle_sc_wrapper_data(outer_sc_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone(), link1, link2);
         // XXX TBD RECONSIDER EXTRA REF CLONE HERE
@@ -189,7 +189,7 @@ impl OuterSCWrapper {
         *middle_sc_wrapper_writer = middle_sc_wrapper_ref.clone();
     }
 
-    fn ref_middle_sc_wrapper_ref(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn ref_middle_sc_wrapper_ref(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterSCWrapperRcRef {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_sc_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
@@ -490,7 +490,7 @@ impl SCLCursor {
         self.outer_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone()
     }
 
-    fn from_outer_sc_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
+    fn from_outer_sc_wrapper(outer_wrapper_ref: OuterSCWrapperRcRef) -> SCLCursor {
         SCLCursor { outer_wrapper_ref }
     }
 }
