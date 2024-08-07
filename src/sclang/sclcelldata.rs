@@ -39,6 +39,7 @@ struct MiddleCellWrapper {
     // XXX TODO "next middle wrapper" ref may lead to retaining excessive middle wrapper objects if SC data is updated over & over (possible memory leakage)
     // XXX TODO LIKELY NEED BETTER SOLUTION FOR THIS
     next_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
+    // XXX TBD RECONSIDER KEEPING THIS STATE HERE - ??? ??? ???
     inner_middle_wrapper: RwCell<Option<MiddleCellWrapperRcRef>>,
 }
 
@@ -59,7 +60,7 @@ struct InnerSCInfoStorage {
     peer_sc_linkage_ref: WeakRefCell<PeerSCLinkageInfo>,
     // XXX TRACK WHERE THE STRONG PEER SC LINKAGE REF IS STORED - XXX TODO IMPROVE NAMING & CLARIFY DESCRIPTION OF THIS FIELD
     peer_sc_linkage_middle_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
-    // XXX TBD RECONSIDER KEEPING THIS STATE - ??? ??? ???
+    // XXX TBD RECONSIDER KEEPING THIS STATE HERE - ??? ??? ???
     inner_middle_cell_wrapper_ref: WeakRefCell<MiddleCellWrapper>,
 }
 
