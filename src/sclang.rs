@@ -435,7 +435,7 @@ fn test_circular_2_records() {
 }
 
 #[test]
-#[serial_test::serial]
+#[serial]
 fn test_circular_5_records() {
     use expect_test::expect;
 
