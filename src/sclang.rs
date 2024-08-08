@@ -872,6 +872,18 @@ fn test_non_circular_2_records() {
 
     sclcelldata::reset_drop_cell_count();
 
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(enable-feature debug)"#;
+    x = expect![[r#"
+        ENABLE FEATURE: debug
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
     cl = r#"(store-data data-1 ("first text" "second text"))"#;
     x = expect![[r#"
         STORED DATA FOR SYMBOL - data-1
