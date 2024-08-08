@@ -191,21 +191,27 @@ impl OuterSCWrapper {
     }
 
     fn update_sc_linkage(outer_sc_wrapper_ref: OuterSCWrapperRcRef, link1: Option<MiddleSCWrapperRcRef>, link2: Option<MiddleSCWrapperRcRef>) {
-        // XXX TODO FIX FORMATTING HERE:
         let middle_sc_wrapper_ref =
-            MiddleSCWrapper::create_with_previous_middle_sc_wrapper_data(
-            outer_sc_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone(),
-            link1,
-            link2,
-        );
+            MiddleSCWrapper::create_with_previous_middle_sc_wrapper_data(outer_sc_wrapper_ref.outer_middle_sc_wrapper.read().unwrap().clone(), link1, link2);
         // XXX TBD RECONSIDER EXTRA REF CLONE HERE
         let previous_middle_sc_wrapper_ref = middle_sc_wrapper_ref.clone();
         let mut previous_middle_sc_wrapper_writer = previous_middle_sc_wrapper_ref.outer_wrapper_ref.write().unwrap();
         *previous_middle_sc_wrapper_writer = RcRef::downgrade(&outer_sc_wrapper_ref);
         let mut middle_sc_wrapper_writer = outer_sc_wrapper_ref.outer_middle_sc_wrapper.write().unwrap();
         *middle_sc_wrapper_writer = middle_sc_wrapper_ref.clone();
-        // XXX XXX XXX XXX EXPLAIN THIS - REMOVES STORAGE OF EXTRA NEXT MIDDLE WRAPPERS - SHOULD AVOID XXX XXX XXX RESOURCE ISSUES
-        *middle_sc_wrapper_ref.previous_middle_wrapper.write().unwrap() = outer_sc_wrapper_ref.inner_sc_data_storage.peer_sc_linkage_middle_wrapper_ref.read().unwrap().clone().upgrade().unwrap().first_inner_middle_wrapper.read().unwrap().clone();
+        // XXX TODO EXPLAIN THIS - REMOVES STORAGE OF EXTRA NEXT MIDDLE WRAPPERS - SHOULD AVOID XXX XXX XXX RESOURCE ISSUES
+        *middle_sc_wrapper_ref.previous_middle_wrapper.write().unwrap() = outer_sc_wrapper_ref
+            .inner_sc_data_storage
+            .peer_sc_linkage_middle_wrapper_ref
+            .read()
+            .unwrap()
+            .clone()
+            .upgrade()
+            .unwrap()
+            .first_inner_middle_wrapper
+            .read()
+            .unwrap()
+            .clone();
     }
 
     fn ref_middle_sc_wrapper_ref(middle_sc_wrapper_ref: MiddleSCWrapperRcRef) -> OuterSCWrapperRcRef {
@@ -492,7 +498,6 @@ impl SCLCursor {
         let my_middle_sc_wrapper_ref = self.get_middle_sc_wrapper();
 
         my_middle_sc_wrapper_ref.update_sc_text_data(text1, text2);
-
 
         let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
         OuterSCWrapper::update_sc_linkage(
