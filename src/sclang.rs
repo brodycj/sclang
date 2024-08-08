@@ -1150,7 +1150,7 @@ fn test_circular_3_records_with_many_updates_todo_check_internal_resource_usage(
     "#]];
     x.assert_eq(execute_command(m, cl).as_str());
 
-    for _ in 1..100 {
+    for _ in 1..100000 {
       // reverse links in data-node-a
       cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-c data-node-b)))"#;
       x = expect![[r#"
