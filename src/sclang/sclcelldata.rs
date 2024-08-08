@@ -40,7 +40,7 @@ struct MiddleSCWrapper {
     // XXX TODO LIKELY NEED BETTER SOLUTION FOR THIS
     previous_middle_wrapper: RwCell<Option<MiddleSCWrapperRcRef>>,
     // XXX TBD RECONSIDER KEEPING THIS STATE HERE - ??? ??? ???
-    first_inner_middle_wrapper: RwCell<Option<MiddleSCWrapperRcRef>>,
+    last_middle_middle_wrapper: RwCell<Option<MiddleSCWrapperRcRef>>,
     inner_inner_middle_wrapper: RwCell<Option<MiddleSCWrapperRcRef>>,
 }
 
@@ -208,7 +208,7 @@ impl OuterSCWrapper {
             .clone()
             .upgrade()
             .unwrap()
-            .first_inner_middle_wrapper
+            .last_middle_middle_wrapper
             .read()
             .unwrap()
             .clone();
@@ -254,7 +254,7 @@ impl MiddleSCWrapper {
             peer_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwCell::new(WeakRef::new()),
             previous_middle_wrapper: RwCell::new(None),
-            first_inner_middle_wrapper: RwCell::new(None),
+            last_middle_middle_wrapper: RwCell::new(None),
             inner_inner_middle_wrapper: RwCell::new(None),
         });
 
@@ -294,9 +294,9 @@ impl MiddleSCWrapper {
             outer_wrapper_ref: RwLock::new(previous_middle_wrapper_ref.clone().outer_wrapper_ref.read().unwrap().clone()),
             previous_middle_wrapper: RwCell::new(Some(previous_middle_wrapper_ref.clone())),
             // XXX TODO CLEANUP THIS:
-            first_inner_middle_wrapper: match previous_middle_wrapper_ref.first_inner_middle_wrapper.read().unwrap().clone() {
+            last_middle_middle_wrapper: match previous_middle_wrapper_ref.last_middle_middle_wrapper.read().unwrap().clone() {
                 None => RwCell::new(Some(previous_middle_wrapper_ref.clone())),
-                Some(_) => RwCell::new(Some(previous_middle_wrapper_ref.first_inner_middle_wrapper.read().unwrap().clone().unwrap())),
+                Some(_) => RwCell::new(Some(previous_middle_wrapper_ref.last_middle_middle_wrapper.read().unwrap().clone().unwrap())),
             },
             inner_inner_middle_wrapper: RwCell::new(inner_inner_middle_wrapper),
         });
@@ -335,7 +335,7 @@ impl MiddleSCWrapper {
             // XXX TBD ??? ??? ???:
             // next_middle_wrapper: RwCell::new(None),
             previous_middle_wrapper: RwCell::new(Some(inner_inner_wrapper.clone())),
-            first_inner_middle_wrapper: RwLock::new(None),
+            last_middle_middle_wrapper: RwLock::new(None),
             inner_inner_middle_wrapper: RwLock::new(Some(
                 inner_sc_data_storage
                     .clone()
