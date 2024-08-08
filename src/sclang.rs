@@ -988,3 +988,365 @@ fn test_non_circular_2_records() {
     let drop_cell_count = sclcelldata::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
+
+#[test]
+#[serial]
+fn test_circular_3_records_with_many_updates_todo_check_internal_resource_usage() {
+    use expect_test::expect;
+
+    sclcelldata::reset_drop_cell_count();
+
+    let mut map: SCLDataMap = HashMap::new();
+    let m = &mut map;
+
+    let mut cl;
+    let mut x;
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(enable-feature debug)"#;
+    x = expect![[r#"
+        ENABLE FEATURE: debug
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(store-data data-node-a ("a-text-1" "a-text-2"))"#;
+    x = expect![[r#"
+        STORED DATA FOR SYMBOL - data-node-a
+        - text 1: "a-text-1"
+        - text 2: "a-text-2"
+        - link 1 - empty
+        - link 2 - empty
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(store-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-a)))"#;
+    x = expect![[r#"
+        STORED DATA FOR SYMBOL - data-node-b
+        - text 1: "b-text-1"
+        - text 2: "b-text-2"
+        - link 1 info:
+          link 1 info - text 1: "a-text-1"
+          link 1 info - text 2: "a-text-2"
+          - link 1 -> link 1 - empty
+          - link 1 -> link 2 - empty
+        - link 2 info:
+          link 2 info - text 1: "a-text-1"
+          link 2 info - text 2: "a-text-2"
+          - link 2 -> link 1 - empty
+          - link 2 -> link 2 - empty
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-b)))"#;
+    x = expect![[r#"
+        UPDATED DATA FOR SYMBOL - data-node-a
+        - text 1: "a-text-1"
+        - text 2: "a-text-2"
+        - link 1 info:
+          link 1 info - text 1: "b-text-1"
+          link 1 info - text 2: "b-text-2"
+          - link 1 -> link 1 info - text only:
+            link 1 -> link 1 info - text 1: "a-text-1"
+            link 1 -> link 1 info - text 2: "a-text-2"
+          - link 1 -> link 2 info - text only:
+            link 1 -> link 2 info - text 1: "a-text-1"
+            link 1 -> link 2 info - text 2: "a-text-2"
+        - link 2 info:
+          link 2 info - text 1: "b-text-1"
+          link 2 info - text 2: "b-text-2"
+          - link 2 -> link 1 info - text only:
+            link 2 -> link 1 info - text 1: "a-text-1"
+            link 2 -> link 1 info - text 2: "a-text-2"
+          - link 2 -> link 2 info - text only:
+            link 2 -> link 2 info - text 1: "a-text-1"
+            link 2 -> link 2 info - text 2: "a-text-2"
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(store-data data-node-c ("c-text-1" "c-text-2" (data-node-a data-node-b)))"#;
+    x = expect![[r#"
+        STORED DATA FOR SYMBOL - data-node-c
+        - text 1: "c-text-1"
+        - text 2: "c-text-2"
+        - link 1 info:
+          link 1 info - text 1: "a-text-1"
+          link 1 info - text 2: "a-text-2"
+          - link 1 -> link 1 info - text only:
+            link 1 -> link 1 info - text 1: "b-text-1"
+            link 1 -> link 1 info - text 2: "b-text-2"
+          - link 1 -> link 2 info - text only:
+            link 1 -> link 2 info - text 1: "b-text-1"
+            link 1 -> link 2 info - text 2: "b-text-2"
+        - link 2 info:
+          link 2 info - text 1: "b-text-1"
+          link 2 info - text 2: "b-text-2"
+          - link 2 -> link 1 info - text only:
+            link 2 -> link 1 info - text 1: "a-text-1"
+            link 2 -> link 1 info - text 2: "a-text-2"
+          - link 2 -> link 2 info - text only:
+            link 2 -> link 2 info - text 1: "a-text-1"
+            link 2 -> link 2 info - text 2: "a-text-2"
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-b)))"#;
+    x = expect![[r#"
+        UPDATED DATA FOR SYMBOL - data-node-a
+        - text 1: "a-text-1"
+        - text 2: "a-text-2"
+        - link 1 info:
+          link 1 info - text 1: "b-text-1"
+          link 1 info - text 2: "b-text-2"
+          - link 1 -> link 1 info - text only:
+            link 1 -> link 1 info - text 1: "a-text-1"
+            link 1 -> link 1 info - text 2: "a-text-2"
+          - link 1 -> link 2 info - text only:
+            link 1 -> link 2 info - text 1: "a-text-1"
+            link 1 -> link 2 info - text 2: "a-text-2"
+        - link 2 info:
+          link 2 info - text 1: "b-text-1"
+          link 2 info - text 2: "b-text-2"
+          - link 2 -> link 1 info - text only:
+            link 2 -> link 1 info - text 1: "a-text-1"
+            link 2 -> link 1 info - text 2: "a-text-2"
+          - link 2 -> link 2 info - text only:
+            link 2 -> link 2 info - text 1: "a-text-1"
+            link 2 -> link 2 info - text 2: "a-text-2"
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-c)))"#;
+    x = expect![[r#"
+        UPDATED DATA FOR SYMBOL - data-node-b
+        - text 1: "b-text-1"
+        - text 2: "b-text-2"
+        - link 1 info:
+          link 1 info - text 1: "a-text-1"
+          link 1 info - text 2: "a-text-2"
+          - link 1 -> link 1 info - text only:
+            link 1 -> link 1 info - text 1: "b-text-1"
+            link 1 -> link 1 info - text 2: "b-text-2"
+          - link 1 -> link 2 info - text only:
+            link 1 -> link 2 info - text 1: "b-text-1"
+            link 1 -> link 2 info - text 2: "b-text-2"
+        - link 2 info:
+          link 2 info - text 1: "c-text-1"
+          link 2 info - text 2: "c-text-2"
+          - link 2 -> link 1 info - text only:
+            link 2 -> link 1 info - text 1: "a-text-1"
+            link 2 -> link 1 info - text 2: "a-text-2"
+          - link 2 -> link 2 info - text only:
+            link 2 -> link 2 info - text 1: "b-text-1"
+            link 2 -> link 2 info - text 2: "b-text-2"
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    for _ in 1..100 {
+      // reverse links in data-node-a
+      cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-c data-node-b)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-a
+          - text 1: "a-text-1"
+          - text 2: "a-text-2"
+          - link 1 info:
+            link 1 info - text 1: "c-text-1"
+            link 1 info - text 2: "c-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "a-text-1"
+              link 1 -> link 1 info - text 2: "a-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "b-text-1"
+              link 1 -> link 2 info - text 2: "b-text-2"
+          - link 2 info:
+            link 2 info - text 1: "b-text-1"
+            link 2 info - text 2: "b-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "a-text-1"
+              link 2 -> link 1 info - text 2: "a-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "c-text-1"
+              link 2 -> link 2 info - text 2: "c-text-2"
+      "#]];
+      x.assert_eq(execute_command(m, cl).as_str());
+  
+      // reverse links in data-node-b
+      cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-c data-node-a)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-b
+          - text 1: "b-text-1"
+          - text 2: "b-text-2"
+          - link 1 info:
+            link 1 info - text 1: "a-text-1"
+            link 1 info - text 2: "a-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "b-text-1"
+              link 1 -> link 1 info - text 2: "b-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "b-text-1"
+              link 1 -> link 2 info - text 2: "b-text-2"
+          - link 2 info:
+            link 2 info - text 1: "c-text-1"
+            link 2 info - text 2: "c-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "a-text-1"
+              link 2 -> link 1 info - text 2: "a-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "b-text-1"
+              link 2 -> link 2 info - text 2: "b-text-2"
+      "#]];
+
+      // reverse links in data-node-c
+      cl = r#"(update-data data-node-c ("c-text-1" "c-text-2" (data-node-b data-node-a)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-c
+          - text 1: "c-text-1"
+          - text 2: "c-text-2"
+          - link 1 info:
+            link 1 info - text 1: "b-text-1"
+            link 1 info - text 2: "b-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "a-text-1"
+              link 1 -> link 1 info - text 2: "a-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "c-text-1"
+              link 1 -> link 2 info - text 2: "c-text-2"
+          - link 2 info:
+            link 2 info - text 1: "a-text-1"
+            link 2 info - text 2: "a-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "c-text-1"
+              link 2 -> link 1 info - text 2: "c-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "b-text-1"
+              link 2 -> link 2 info - text 2: "b-text-2"
+      "#]];
+      x.assert_eq(execute_command(m, cl).as_str());
+
+      // restore links in data-node-a
+      cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-c)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-a
+          - text 1: "a-text-1"
+          - text 2: "a-text-2"
+          - link 1 info:
+            link 1 info - text 1: "b-text-1"
+            link 1 info - text 2: "b-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "a-text-1"
+              link 1 -> link 1 info - text 2: "a-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "c-text-1"
+              link 1 -> link 2 info - text 2: "c-text-2"
+          - link 2 info:
+            link 2 info - text 1: "c-text-1"
+            link 2 info - text 2: "c-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "b-text-1"
+              link 2 -> link 1 info - text 2: "b-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "a-text-1"
+              link 2 -> link 2 info - text 2: "a-text-2"
+      "#]];
+      x.assert_eq(execute_command(m, cl).as_str());
+  
+      // restore links in data-node-b
+      cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-c)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-b
+          - text 1: "b-text-1"
+          - text 2: "b-text-2"
+          - link 1 info:
+            link 1 info - text 1: "a-text-1"
+            link 1 info - text 2: "a-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "b-text-1"
+              link 1 -> link 1 info - text 2: "b-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "b-text-1"
+              link 1 -> link 2 info - text 2: "b-text-2"
+          - link 2 info:
+            link 2 info - text 1: "c-text-1"
+            link 2 info - text 2: "c-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "a-text-1"
+              link 2 -> link 1 info - text 2: "a-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "b-text-1"
+              link 2 -> link 2 info - text 2: "b-text-2"
+      "#]];
+
+      // restore links in data-node-c
+      cl = r#"(update-data data-node-c ("c-text-1" "c-text-2" (data-node-a data-node-b)))"#;
+      x = expect![[r#"
+          UPDATED DATA FOR SYMBOL - data-node-c
+          - text 1: "c-text-1"
+          - text 2: "c-text-2"
+          - link 1 info:
+            link 1 info - text 1: "a-text-1"
+            link 1 info - text 2: "a-text-2"
+            - link 1 -> link 1 info - text only:
+              link 1 -> link 1 info - text 1: "b-text-1"
+              link 1 -> link 1 info - text 2: "b-text-2"
+            - link 1 -> link 2 info - text only:
+              link 1 -> link 2 info - text 1: "c-text-1"
+              link 1 -> link 2 info - text 2: "c-text-2"
+          - link 2 info:
+            link 2 info - text 1: "b-text-1"
+            link 2 info - text 2: "b-text-2"
+            - link 2 -> link 1 info - text only:
+              link 2 -> link 1 info - text 1: "a-text-1"
+              link 2 -> link 1 info - text 2: "a-text-2"
+            - link 2 -> link 2 info - text only:
+              link 2 -> link 2 info - text 1: "c-text-1"
+              link 2 -> link 2 info - text 2: "c-text-2"
+      "#]];
+      x.assert_eq(execute_command(m, cl).as_str());
+    }
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-a)"#;
+    x = expect![[r#"
+        DROPPED SYMBOL: data-node-a
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-b)"#;
+    x = expect![[r#"
+        DROPPED SYMBOL: data-node-b
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-c)"#;
+    x = expect![[r#"
+        DROPPED SYMBOL: data-node-c
+    "#]];
+    x.assert_eq(execute_command(m, cl).as_str());
+
+    x = expect![[r#"
+        3
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+  }
