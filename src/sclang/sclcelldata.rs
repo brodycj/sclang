@@ -109,26 +109,17 @@ impl Drop for MiddleSCWrapper {
 
         // XXX TODO: EXPLAIN RATIONALE & HOW THIS WORKS
 
-        // XXX XXX XXX
-        // XXX TODO XXX XXX XXX
-        // let maybe_next_middle_wrapper = self.next_middle_wrapper.read().unwrap();
-        // let maybe_next_middle_wrapper = self.first_inner_middle_wrapper.read().unwrap();
-
         let maybe_inner_sc_linkage = self.peer_sc_linkage_info_strong_ref.read().unwrap().clone();
         if maybe_inner_sc_linkage.is_none() {
             return;
         }
 
-        let maybe_previous_middle_wrapper = self.previous_middle_wrapper.read().unwrap();
-        if maybe_previous_middle_wrapper.is_none() {
+        let maybe_last_middle_middle_wrapper = self.last_middle_middle_wrapper.read().unwrap();
+        if maybe_last_middle_middle_wrapper.is_none() {
             return;
         }
 
-        let previous_middle_wrapper_ref = maybe_previous_middle_wrapper.as_ref().unwrap().clone();
-
-        if previous_middle_wrapper_ref.previous_middle_wrapper.read().unwrap().is_none() {
-            return;
-        }
+        let last_middle_middle_wrapper_ref = maybe_last_middle_middle_wrapper.as_ref().unwrap().clone();
 
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
@@ -157,7 +148,7 @@ impl Drop for MiddleSCWrapper {
             ),
         });
 
-        *previous_middle_wrapper_ref.peer_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
+        *last_middle_middle_wrapper_ref.peer_sc_linkage_info_strong_ref.write().unwrap() = Some(inner_sc_linkage_ref.clone());
 
         *self.sc_data_storage.peer_sc_linkage_ref.write().unwrap() = RcRef::downgrade(&inner_sc_linkage_ref);
     }
