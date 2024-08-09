@@ -11,6 +11,7 @@ pest_derive = "2"
 [dev-dependencies]
 criterion = "0.5.1"
 expect-test = "1"
+memory-stats = "1.2.0"
 rustyline = "14"
 serial_test = "3"
 
