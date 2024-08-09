@@ -1000,3 +1000,104 @@ fn test_non_circular_2_records() {
     let drop_cell_count = sclcelldata::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
+
+#[test]
+#[serial]
+fn test_circular_3_records_with_many_many_updates() {
+    use expect_test::expect;
+
+    // NOTE: This was tested up to 1 MILLION iterations with no issues on author @brodycj's 2023 MacBook Pro
+    // TBD try up to 10 / 50 / 100 MILLION iterations - may take a while for this to run :)
+    let UPDATE_ITERATION_COUNT = 10 * 1000;
+
+    sclcelldata::reset_drop_cell_count();
+
+    let mut map: SCLDataMap = HashMap::new();
+    let m = &mut map;
+
+    let mut cl;
+    let mut x;
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(store-data data-node-a ("a-text-1" "a-text-2"))"#;
+    execute_command(m, cl);
+
+    cl = r#"(store-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-a)))"#;
+    execute_command(m, cl);
+
+    cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-b)))"#;
+    execute_command(m, cl);
+
+    cl = r#"(store-data data-node-c ("c-text-1" "c-text-2" (data-node-a data-node-b)))"#;
+    execute_command(m, cl);
+
+    cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-b)))"#;
+    execute_command(m, cl);
+
+    cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-c)))"#;
+    execute_command(m, cl);
+
+    for _ in 1..UPDATE_ITERATION_COUNT {
+        // reverse links in data-node-a
+        cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-c data-node-b)))"#;
+        execute_command(m, cl);
+
+        // reverse links in data-node-b
+        cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-c data-node-a)))"#;
+        execute_command(m, cl);
+
+        // reverse links in data-node-c
+        cl = r#"(update-data data-node-c ("c-text-1" "c-text-2" (data-node-b data-node-a)))"#;
+        execute_command(m, cl);
+
+        // restore links in data-node-a
+        cl = r#"(update-data data-node-a ("a-text-1" "a-text-2" (data-node-b data-node-c)))"#;
+        execute_command(m, cl);
+
+        // restore links in data-node-b
+        cl = r#"(update-data data-node-b ("b-text-1" "b-text-2" (data-node-a data-node-c)))"#;
+        execute_command(m, cl);
+
+        // restore links in data-node-c
+        cl = r#"(update-data data-node-c ("c-text-1" "c-text-2" (data-node-a data-node-b)))"#;
+        execute_command(m, cl);
+    }
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-a)"#;
+    execute_command(m, cl);
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-b)"#;
+    execute_command(m, cl);
+
+    x = expect![[r#"
+        0
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+
+    cl = r#"(drop-symbol data-node-c)"#;
+    execute_command(m, cl);
+
+    x = expect![[r#"
+        3
+    "#]];
+    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    x.assert_debug_eq(&drop_cell_count);
+}
