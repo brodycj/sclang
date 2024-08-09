@@ -9,6 +9,11 @@ pest = "2"
 pest_derive = "2"
 
 [dev-dependencies]
+criterion = "0.5.1"
 expect-test = "1"
 rustyline = "14"
 serial_test = "3"
+
+[[bench]]
+name="bb"
+harness=false
