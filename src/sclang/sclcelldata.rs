@@ -2,9 +2,10 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCLCursor {
-    outer_wrapper_ref: OuterCellWrapperRcRef,
-}
+pub struct SCLRef(PersistentSCLifetimeManagerRef);
+
+// XXX TBD TEMPORARY ALIAS - XXX TODO IMPROVE INTERNAL struct naming
+type PersistentSCLifetimeManagerRef = OuterCellWrapperRcRef;
 
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
@@ -180,8 +181,8 @@ impl Drop for MiddleCellWrapper {
 }
 
 impl OuterCellWrapper {
-    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
-        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
+    fn create_with_sc_text_data(text1: &str, text2: &str) -> OuterCellWrapperRcRef {
+        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_sc_info_text_data(text1, text2);
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -277,15 +278,11 @@ impl OuterCellWrapper {
 }
 
 impl MiddleCellWrapper {
-    fn create_with_inner_cell_data(
-        text1: &str,
-        text2: &str,
-        link1: Option<MiddleCellWrapperRcRef>,
-        link2: Option<MiddleCellWrapperRcRef>,
-    ) -> MiddleCellWrapperRcRef {
+    // NOTE: This is the inner-most middle cell wrapper ... not keeping strong SC linkage ref here for now (at least)
+    fn create_with_sc_info_text_data(text1: &str, text2: &str) -> MiddleCellWrapperRcRef {
         let mut inner_sc_info_storage = InnerSCInfoStorage::create_with_inner_text_fields(text1, text2);
 
-        let cell_linkage_strong_ref = RwValue::new(Some(InnerSCLinkageInfo::create_with_middle_cw_links(link1.clone(), link2.clone())));
+        let cell_linkage_strong_ref = RwValue::new(Some(InnerSCLinkageInfo::create_with_middle_cw_links(None, None)));
 
         // KEEP XXX XXX INFO IN SYNC HERE
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
@@ -402,66 +399,54 @@ impl InnerSCInfoStorage {
     }
 }
 
-impl SCLCursor {
+impl SCLRef {
     pub fn get_text1(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.outer_wrapper_ref.inner_sc_info_storage_ref.get_text1()
+        self.get_inner_sc_info_storage_ref().get_text1()
     }
 
     pub fn get_text2(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.outer_wrapper_ref.inner_sc_info_storage_ref.get_text2()
+        self.get_inner_sc_info_storage_ref().get_text2()
     }
 
-    pub fn get_link1(&self) -> Option<SCLCursor> {
-        // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
-        let sc_linkage_info_ref = self
-            .outer_wrapper_ref
-            .inner_sc_info_storage_ref
-            .sc_linkage_info_weak_ref
-            .read()
-            .unwrap()
-            .upgrade();
-        if sc_linkage_info_ref.is_none() {
+    pub fn get_link1(&self) -> Option<SCLRef> {
+        // XXX TODO ADD & USE HELPER FN FOR SOME OF THE CODE HERE
+        let maybe_inner_sc_linkage_info = self.maybe_inner_sc_linkage();
+        if maybe_inner_sc_linkage_info.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link1.clone();
+        let maybe_linked_middle_cell_wrapper_ref = maybe_inner_sc_linkage_info.unwrap().link1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
     }
 
-    pub fn get_link2(&self) -> Option<SCLCursor> {
-        // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
-        let sc_linkage_info_ref = self
-            .outer_wrapper_ref
-            .inner_sc_info_storage_ref
-            .sc_linkage_info_weak_ref
-            .read()
-            .unwrap()
-            .upgrade();
-        if sc_linkage_info_ref.is_none() {
+    pub fn get_link2(&self) -> Option<SCLRef> {
+        // XXX TODO ADD & USE HELPER FN FOR SOME OF THE CODE HERE
+        let maybe_inner_sc_linkage_info = self.maybe_inner_sc_linkage();
+        if maybe_inner_sc_linkage_info.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link2.clone();
+        let maybe_linked_middle_cell_wrapper_ref = maybe_inner_sc_linkage_info.unwrap().link2.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
     }
 
     // XXX TBD SHOULD THIS TAKE &mut self ???
-    pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLCursor>, link2: Option<SCLCursor>) {
+    pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLRef>, link2: Option<SCLRef>) {
         let my_middle_cell_wrapper_ref = self.get_middle_cell_wrapper();
 
         my_middle_cell_wrapper_ref.update_cell_text_data(text1, text2);
 
-        let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
+        let my_outer_wrapper_ref = self.0.clone();
         // NOTE: This should update the SC linkage so that it links to the outer-most middle lifetime wrapper for both linked SC peers.
         OuterCellWrapper::update_sc_linkage(
             my_outer_wrapper_ref,
@@ -529,36 +514,41 @@ impl SCLCursor {
         dump
     }
 
+    #[inline]
     fn get_middle_cell_wrapper(&self) -> MiddleCellWrapperRcRef {
-        self.outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()
+        self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
-    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
-        SCLCursor { outer_wrapper_ref }
+    #[inline]
+    fn get_inner_sc_info_storage_ref(&self) -> InnerSCInfoStorageRcRef {
+        self.0.inner_sc_info_storage_ref.clone()
+    }
+
+    #[inline]
+    fn maybe_inner_sc_linkage(&self) -> Option<RcRef<InnerSCLinkageInfo>> {
+        self.get_inner_sc_info_storage_ref().sc_linkage_info_weak_ref.read().unwrap().upgrade()
+    }
+
+    #[inline]
+    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLRef {
+        SCLRef(outer_wrapper_ref)
     }
 }
 
-pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLCursor {
+pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLRef {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
-    let x = SCLCursor::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLRef::from_outer_cell_wrapper(OuterCellWrapper::create_with_sc_text_data(text1, text2));
     // XXX TODO THIS UPDATE IS NOT NEEDED AS THERE ARE NO PEERS TO LINK TO AT THIS POINT
     x.update_data(text1, text2, None, None);
     x
 }
 
-pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2: SCLCursor) -> SCLCursor {
-    // XXX TODO USE UTIL FN HERE
-    let cw = OuterCellWrapper::create_with_cell_data(
-        text1,
-        text2,
-        // XXX TODO DO NOT CREATE WITH THE LINKS HERE ... NO NEED AS THE UPDATE TO INCLUDE THE PEER LINKS IS DONE SEPARATELY
-        Some(link1.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
-    );
+pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLRef, link2: SCLRef) -> SCLRef {
+    let cw = OuterCellWrapper::create_with_sc_text_data(text1, text2);
 
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
     // XXX QUICK RATIONALE NEEDS EXPANDING: SHOULD NOT KEEP LINKS AT INNER-MOST MIDDLE WRAPPER LAYER IN ORDER TO AVOID (PREVENT) TRULY CIRCULAR REF CYCLES
-    let x = SCLCursor::from_outer_cell_wrapper(cw);
+    let x = SCLRef::from_outer_cell_wrapper(cw);
     // XXX TODO IMPROVE NOTE: THIS CREATES ANOTHER MIDDLE LIFETIME WRAPPER WITH STRONG REFERENCE TO THE PEER LINKS
     x.update_data(text1, text2, Some(link1), Some(link2));
     x
