@@ -402,21 +402,27 @@ impl InnerSCInfoStorage {
 impl SCLRef {
     pub fn get_text1(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.get_inner_sc_info_storage_ref().get_text1()
+        self.0.inner_sc_info_storage_ref.get_text1()
     }
 
     pub fn get_text2(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.get_inner_sc_info_storage_ref().get_text2()
+        self.0.inner_sc_info_storage_ref.get_text2()
     }
 
     pub fn get_link1(&self) -> Option<SCLRef> {
-        // XXX TODO ADD & USE HELPER FN FOR SOME OF THE CODE HERE
-        let maybe_inner_sc_linkage_info = self.maybe_inner_sc_linkage();
-        if maybe_inner_sc_linkage_info.is_none() {
+        // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
+        let sc_linkage_info_ref = self
+            .0 // -----
+            .inner_sc_info_storage_ref
+            .sc_linkage_info_weak_ref
+            .read()
+            .unwrap()
+            .upgrade();
+        if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = maybe_inner_sc_linkage_info.unwrap().link1.clone();
+        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
             Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
@@ -426,12 +432,18 @@ impl SCLRef {
     }
 
     pub fn get_link2(&self) -> Option<SCLRef> {
-        // XXX TODO ADD & USE HELPER FN FOR SOME OF THE CODE HERE
-        let maybe_inner_sc_linkage_info = self.maybe_inner_sc_linkage();
-        if maybe_inner_sc_linkage_info.is_none() {
+        // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
+        let sc_linkage_info_ref = self
+            .0 // ---
+            .inner_sc_info_storage_ref
+            .sc_linkage_info_weak_ref
+            .read()
+            .unwrap()
+            .upgrade();
+        if sc_linkage_info_ref.is_none() {
             return None;
         };
-        let maybe_linked_middle_cell_wrapper_ref = maybe_inner_sc_linkage_info.unwrap().link2.clone();
+        let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link2.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
             Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
@@ -514,22 +526,22 @@ impl SCLRef {
         dump
     }
 
-    #[inline]
+    // #[inline]
     fn get_middle_cell_wrapper(&self) -> MiddleCellWrapperRcRef {
         self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
-    #[inline]
-    fn get_inner_sc_info_storage_ref(&self) -> InnerSCInfoStorageRcRef {
-        self.0.inner_sc_info_storage_ref.clone()
-    }
+    // #[inline]
+    // fn get_inner_sc_info_storage_ref(&self) -> InnerSCInfoStorageRcRef {
+    //     self.0.inner_sc_info_storage_ref.clone()
+    // }
 
-    #[inline]
-    fn maybe_inner_sc_linkage(&self) -> Option<RcRef<InnerSCLinkageInfo>> {
-        self.get_inner_sc_info_storage_ref().sc_linkage_info_weak_ref.read().unwrap().upgrade()
-    }
+    // #[inline]
+    // fn maybe_inner_sc_linkage(&self) -> Option<RcRef<InnerSCLinkageInfo>> {
+    //     self.get_inner_sc_info_storage_ref().sc_linkage_info_weak_ref.read().unwrap().upgrade()
+    // }
 
-    #[inline]
+    // #[inline]
     fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLRef {
         SCLRef(outer_wrapper_ref)
     }
