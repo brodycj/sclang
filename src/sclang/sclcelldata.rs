@@ -2,9 +2,7 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCLCursor {
-    outer_wrapper_ref: OuterCellWrapperRcRef,
-}
+pub struct SCLCursor(OuterCellWrapperRcRef);
 
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
@@ -405,18 +403,18 @@ impl InnerSCInfoStorage {
 impl SCLCursor {
     pub fn get_text1(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.outer_wrapper_ref.inner_sc_info_storage_ref.get_text1()
+        self.0.inner_sc_info_storage_ref.get_text1()
     }
 
     pub fn get_text2(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
-        self.outer_wrapper_ref.inner_sc_info_storage_ref.get_text2()
+        self.0.inner_sc_info_storage_ref.get_text2()
     }
 
     pub fn get_link1(&self) -> Option<SCLCursor> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
         let sc_linkage_info_ref = self
-            .outer_wrapper_ref
+            .0 // ---
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -437,7 +435,7 @@ impl SCLCursor {
     pub fn get_link2(&self) -> Option<SCLCursor> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE
         let sc_linkage_info_ref = self
-            .outer_wrapper_ref
+            .0 // ---
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -461,7 +459,7 @@ impl SCLCursor {
 
         my_middle_cell_wrapper_ref.update_cell_text_data(text1, text2);
 
-        let my_outer_wrapper_ref = self.outer_wrapper_ref.clone();
+        let my_outer_wrapper_ref = self.0.clone();
         // NOTE: This should update the SC linkage so that it links to the outer-most middle lifetime wrapper for both linked SC peers.
         OuterCellWrapper::update_sc_linkage(
             my_outer_wrapper_ref,
@@ -530,11 +528,11 @@ impl SCLCursor {
     }
 
     fn get_middle_cell_wrapper(&self) -> MiddleCellWrapperRcRef {
-        self.outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()
+        self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
     fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLCursor {
-        SCLCursor { outer_wrapper_ref }
+        SCLCursor(outer_wrapper_ref)
     }
 }
 
@@ -552,8 +550,8 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
         text1,
         text2,
         // XXX TODO DO NOT CREATE WITH THE LINKS HERE ... NO NEED AS THE UPDATE TO INCLUDE THE PEER LINKS IS DONE SEPARATELY
-        Some(link1.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().outer_wrapper_ref.middle_cell_wrapper.read().unwrap().clone()),
+        Some(link1.clone().0.middle_cell_wrapper.read().unwrap().clone()),
+        Some(link2.clone().0.middle_cell_wrapper.read().unwrap().clone()),
     );
 
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
