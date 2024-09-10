@@ -549,7 +549,9 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLCursor, link2:
     let cw = OuterCellWrapper::create_with_cell_data(
         text1,
         text2,
-        // XXX TODO DO NOT CREATE WITH THE LINKS HERE ... NO NEED AS THE UPDATE TO INCLUDE THE PEER LINKS IS DONE SEPARATELY
+        // XXX TBD SHOULD BE NO NEED TO CREATE WITH THE LINKS AT THIS POINT
+        // AS THE UPDATE BELOW WILL INCLUDE THE PEER LINKS NEEDED
+        // (NEED TO CHECK IMPACT ON BENCHMARKS WHEN REMOVING THE LINKS FROM THIS PART)
         Some(link1.clone().0.middle_cell_wrapper.read().unwrap().clone()),
         Some(link2.clone().0.middle_cell_wrapper.read().unwrap().clone()),
     );
