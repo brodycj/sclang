@@ -36,8 +36,8 @@ pub fn is_debug_enabled() -> bool {
 // HOPEFULLY BETTER NAMING CAN REDUCE THE NEED FOR SOME OF THE DESCRIPTIVE TEXT HERE
 
 struct OuterCellWrapper {
-    // NOTE: SCLCursor keeps a reference to this "outer wrapper", which also acts as a top-level lifetime manager
-    // for SCL data cell objects which are *indirectly* referenced by SCLCursor objects.
+    // NOTE: SCLRef keeps a reference to this "outer wrapper", which also acts as a top-level lifetime manager
+    // for SCL data cell objects which are *indirectly* referenced by SCLRef objects.
     // -- END OF NOTE
     // This wrapper contains the following important fields:
     // ** middle_cell_wrapper - references the outer-most middle lifetime wrapper (OUTER-MIDDLE LIFETIME WRAPPER),
@@ -55,7 +55,7 @@ type MiddleCellWrapperRcRef = RcRef<MiddleCellWrapper>;
 // XXX TODO RECONSIDER NAMING FOR THIS LIFETIME MANAGER
 struct MiddleCellWrapper {
     // NOTE: This is an object lifetime manager "wrapper" that helps keep data objects alive exactly as long as they are
-    // directly or indirectly reachable from the outside via using SCLCursor objects.
+    // directly or indirectly reachable from the outside via using SCLRef objects.
     // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
     // unreadable SCL data cell objects to be automatically dropped & cleaned up once they are no longer reachable from the outside.
     // XXX TODO NEED GOOD EXPLANATION OF THE STRATEGY FOR THIS !!!
