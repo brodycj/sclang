@@ -6,9 +6,11 @@ USING REFERENCE MANAGEMENT CELLS WITH HELP FROM STRONG & WEAK REFERENCES TO AVOI
 
 STATUS: EXPERIMENTAL WITH NO GUARANTEES WHATSOEVER NEEDS MASSIVE CLEANUP & LIKELY NEEDS MASSIVE OPTIMIZATION, MULTI-THREADING NOT EXPECTED TO WORK
 
-HOW (DON"T ASK): Using cell-like data structures with strong RC references & weak RC references to manage data cell & data cell linkage lifetime - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
+HOW (DON'T ASK): Using cell-like data structures with strong (A)RC references & weak (A)RC references to manage data cell & data cell linkage lifetime - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
 
 MAJOR TODO ITEM IS TO SUPPORT `no_std` environment for EMBEDDED SYSTEMS
+
+BENCHMARKS ARE VERY ROUGH & LIKELY AFFECTED BY ADDITIONAL SCLang parsing overhead
 
 TO RUN TEST:
 
@@ -29,6 +31,7 @@ cargo bench --bench bench-1 -- --verbose
 cargo bench --bench bench-2 -- --verbose
 ```
 
+---
 
 SAMPLE INTERACTIVE SESSION THAT DEMONSTRATES STORING CIRCULAR-LINKED DATA CELLS WITH DEBUG PRINT OUTPUT INCLUDED, ABLE TO REMOVE & CLEAN UP UNREACHABLE CELLS IN THE END
 
