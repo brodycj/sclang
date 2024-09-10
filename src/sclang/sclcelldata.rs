@@ -2,7 +2,10 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCLCursor(OuterCellWrapperRcRef);
+pub struct SCLCursor(PersistentSCLifetimeManagerRef);
+
+// XXX TBD TEMPORARY ALIAS - XXX TODO IMPROVE INTERNAL struct naming
+type PersistentSCLifetimeManagerRef = OuterCellWrapperRcRef;
 
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
