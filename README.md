@@ -22,10 +22,11 @@ TO RUN INTERACTIVE CLI DEMO:
 cargo run --example i-cli
 ```
 
-TO RUN BENCHMARK WITH VERBOSE BENCHMARK INFO IN THE END:
+TO RUN BENCHMARKS WITH VERBOSE BENCHMARK INFO IN THE END:
 
 ```sh
 cargo bench --bench bench-1 -- --verbose
+cargo bench --bench bench-2 -- --verbose
 ```
 
 

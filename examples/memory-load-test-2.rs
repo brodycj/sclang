@@ -2,9 +2,9 @@ use sclang::load_test;
 
 use memory_stats::memory_stats;
 
-static UPDATE_ITERATION_COUNT: i32 = 2 * 1000 * 1000;
+static UPDATE_ITERATION_COUNT: i32 = 2;
 
-static READ_ITERATION_COUNT: i32 = 1;
+static READ_ITERATION_COUNT: i32 = 2 * 1000 * 1000;
 
 fn main() {
     load_test::load_test(UPDATE_ITERATION_COUNT, READ_ITERATION_COUNT);

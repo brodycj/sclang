@@ -1,6 +1,6 @@
 use super::sclang::{execute_command, SCLDataMap};
 
-pub fn load_test(update_iteration_count: i32) {
+pub fn load_test(update_iteration_count: i32, read_iteration_count: i32) {
     let mut symbol_data_map = SCLDataMap::new();
     let m = &mut symbol_data_map;
 
@@ -21,5 +21,11 @@ pub fn load_test(update_iteration_count: i32) {
         execute_command(m, "(update-data a (\"a-text-1\" \"a-text-2\" (b c)))");
         execute_command(m, "(update-data b (\"b-text-1\" \"b-text-2\" (a c)))");
         execute_command(m, "(update-data c (\"c-text-1\" \"c-text-2\" (a b)))");
+    }
+
+    for _ in 1..read_iteration_count {
+        execute_command(m, "(show-data a)");
+        execute_command(m, "(show-data b)");
+        execute_command(m, "(show-data c)");
     }
 }
