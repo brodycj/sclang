@@ -31,6 +31,13 @@ cargo bench --bench bench-1 -- --verbose
 cargo bench --bench bench-2 -- --verbose
 ```
 
+TO RUN CI-friendly iai benchmarks - requires valgrind:
+
+```sh
+cargo bench --bench iai-bench-1 -- --verbose
+cargo bench --bench iai-bench-2 -- --verbose
+```
+
 ---
 
 SAMPLE INTERACTIVE SESSION THAT DEMONSTRATES STORING CIRCULAR-LINKED DATA CELLS WITH DEBUG PRINT OUTPUT INCLUDED, ABLE TO REMOVE & CLEAN UP UNREACHABLE CELLS IN THE END
