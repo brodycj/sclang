@@ -27,3 +27,14 @@ jobs:
     - uses: actions/checkout@v4
     - name: check fmt
       run: cargo build --verbose
+
+  log-iai-bench-verbose-output:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bench:
+          - iai-bench-1
+          - iai-bench-2
+    steps:
+    - uses: actions/checkout@v4
+    - run: cargo bench --bench ${{ matrix.bench }} -- --verbose
