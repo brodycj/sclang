@@ -93,6 +93,7 @@ static drop_cell_count: RwValue<i32> = RwValue::new(0);
 impl Drop for SCInfoManager {
     fn drop(&mut self) {
         if is_debug_enabled() {
+            // XXX TODO UPDATE THIS INFO TEXT
             println!("DROP CELL DATA with info:");
             println!("- text 1: {}", self.text1.read().unwrap());
             println!("- text 2: {}", self.text2.read().unwrap());
@@ -101,6 +102,7 @@ impl Drop for SCInfoManager {
         *x = *x + 1;
         drop(x);
         if is_debug_enabled() {
+            // XXX TODO UPDATE THIS INFO TEXT
             println!("DROP CELL COUNT: {}", get_drop_cell_count());
             println!("--- --- ---");
         }
