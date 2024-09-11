@@ -2,11 +2,9 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCLRef(PersistentSCManagerRef);
+pub struct SCLRef(PersistentSCManagerRcRef);
 
-// XXX TBD TEMPORARY ALIASING / XXX - XXX TODO IMPROVE INTERNAL struct naming
-type PersistentSCManagerRef = RcRef<PersistentSCManager>;
-type OuterCellWrapperRcRef = RcRef<PersistentSCManager>;
+type PersistentSCManagerRcRef = RcRef<PersistentSCManager>;
 
 // NOTE: While these type aliases may be ready to provide multi-threaded safety, the overall design
 // of this library is not yet ready to be considered safe for multi-threaded access.
@@ -182,7 +180,7 @@ impl Drop for LinkedSCManager {
 }
 
 impl PersistentSCManager {
-    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
+    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> PersistentSCManagerRcRef {
         let middle_cell_wrapper_ref = LinkedSCManager::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
@@ -194,7 +192,7 @@ impl PersistentSCManager {
         outer_wrapper_ref
     }
 
-    fn create_with_middle_wrapper_ref(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn create_with_middle_wrapper_ref(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> PersistentSCManagerRcRef {
         let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -205,7 +203,7 @@ impl PersistentSCManager {
         outer_wrapper_ref
     }
 
-    fn update_sc_linkage(outer_cell_wrapper_ref: OuterCellWrapperRcRef, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) {
+    fn update_sc_linkage(outer_cell_wrapper_ref: PersistentSCManagerRcRef, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) {
         // XXX TODO BOTH THIS CODE & THESE COMMENTS ARE WAY TO MUCH - NEED TO COMPLETELY REWRITE BOTH THIS CODE HERE & THESE COMMENTS
         // NOTE: This should create a new middle lifetime wrapper, which contains linkage for both peer links.
         // In case there is both inner middle lifetime wrapper & one more middle lifetime wrapper,
@@ -267,7 +265,7 @@ impl PersistentSCManager {
         *middle_cell_wrapper_writer = middle_cell_wrapper_ref.clone();
     }
 
-    fn ref_middle_cell_wrapper_ref(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
+    fn ref_middle_cell_wrapper_ref(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> PersistentSCManagerRcRef {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
@@ -535,7 +533,7 @@ impl SCLRef {
         self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
-    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLRef {
+    fn from_outer_cell_wrapper(outer_wrapper_ref: PersistentSCManagerRcRef) -> SCLRef {
         SCLRef(outer_wrapper_ref)
     }
 }
