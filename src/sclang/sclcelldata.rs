@@ -63,7 +63,7 @@ struct LinkedSCManager {
     // XXX TODO EXPLAIN RATIONALE FOR THIS STRONG REF OPTION
     // QUICK RATIONALE: outer-most middle lifetime wrapper is expected to keep the strong reference to the SC linkage info
     // (until it is superceded by a newer outer-most middle lifetime wrapper)
-    inner_sc_linkage_info_strong_ref: RwValue<Option<RcRef<InnerSCLinkageInfo>>>,
+    inner_sc_linkage_info_strong_ref: RwValue<Option<RcRef<SCLinkageManager>>>,
     outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TODO EXPLAIN HOW THIS WORKS
     // XXX TBD NAMING - perhaps as "previous middle wrapper" / "older middle wrapper" / etc.
@@ -71,26 +71,26 @@ struct LinkedSCManager {
 }
 
 // XXX TBD RECONSIDER NAMING ??? ???
-struct InnerSCLinkageInfo {
+struct SCLinkageManager {
     link1: Option<MiddleCellWrapperRcRef>,
     link2: Option<MiddleCellWrapperRcRef>,
 }
 
-type InnerSCInfoStorageRcRef = RcRef<InnerSCInfoStorage>;
+type InnerSCInfoStorageRcRef = RcRef<SCInfoManager>;
 
-struct InnerSCInfoStorage {
+struct SCInfoManager {
     text1: RcRef<RwValue<String>>,
     text2: RcRef<RwValue<String>>,
     outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TBD NAMING OF THIS ??? ???
-    sc_linkage_info_weak_ref: RwWeakRef<InnerSCLinkageInfo>,
+    sc_linkage_info_weak_ref: RwWeakRef<SCLinkageManager>,
     linkage_strong_ref_wrapper: RwWeakRef<LinkedSCManager>,
     inner_middle_cell_wrapper_ref: RwWeakRef<LinkedSCManager>,
 }
 
 static drop_cell_count: RwValue<i32> = RwValue::new(0);
 
-impl Drop for InnerSCInfoStorage {
+impl Drop for SCInfoManager {
     fn drop(&mut self) {
         if is_debug_enabled() {
             println!("DROP CELL DATA with info:");
@@ -147,7 +147,7 @@ impl Drop for LinkedSCManager {
         // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
-        let inner_sc_linkage_ref = RcRef::new(InnerSCLinkageInfo {
+        let inner_sc_linkage_ref = RcRef::new(SCLinkageManager {
             // XXX TODO UTILITY FN
             link1: maybe_inner_sc_linkage
                 .clone()
@@ -283,9 +283,9 @@ impl LinkedSCManager {
         link1: Option<MiddleCellWrapperRcRef>,
         link2: Option<MiddleCellWrapperRcRef>,
     ) -> MiddleCellWrapperRcRef {
-        let mut inner_sc_info_storage = InnerSCInfoStorage::create_with_inner_text_fields(text1, text2);
+        let mut inner_sc_info_storage = SCInfoManager::create_with_inner_text_fields(text1, text2);
 
-        let cell_linkage_strong_ref = RwValue::new(Some(InnerSCLinkageInfo::create_with_middle_cw_links(link1.clone(), link2.clone())));
+        let cell_linkage_strong_ref = RwValue::new(Some(SCLinkageManager::create_with_middle_cw_links(link1.clone(), link2.clone())));
 
         // KEEP XXX XXX INFO IN SYNC HERE
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
@@ -312,7 +312,7 @@ impl LinkedSCManager {
     ) -> MiddleCellWrapperRcRef {
         let inner_sc_info_storage = next_middle_wrapper.clone().inner_sc_info_storage.clone();
 
-        let cell_linkage_strong_ref = RwValue::new(Some(InnerSCLinkageInfo::create_with_middle_cw_links(link1.clone(), link2.clone())));
+        let cell_linkage_strong_ref = RwValue::new(Some(SCLinkageManager::create_with_middle_cw_links(link1.clone(), link2.clone())));
 
         // XXX TODO RECONSIDER EXTRA REF CLONE HERE
         let inner_sc_info_storage_ref = inner_sc_info_storage.clone();
@@ -362,10 +362,10 @@ impl LinkedSCManager {
     }
 }
 
-impl InnerSCLinkageInfo {
+impl SCLinkageManager {
     // XXX TBD SUPPORT CREATE API FN WITH EMPTY LINKS ???
-    fn create_with_middle_cw_links(link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> RcRef<InnerSCLinkageInfo> {
-        RcRef::new(InnerSCLinkageInfo { link1, link2 })
+    fn create_with_middle_cw_links(link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> RcRef<SCLinkageManager> {
+        RcRef::new(SCLinkageManager { link1, link2 })
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
@@ -379,9 +379,9 @@ impl InnerSCLinkageInfo {
     }
 }
 
-impl InnerSCInfoStorage {
+impl SCInfoManager {
     fn create_with_inner_text_fields(text1: &str, text2: &str) -> InnerSCInfoStorageRcRef {
-        RcRef::new(InnerSCInfoStorage {
+        RcRef::new(SCInfoManager {
             text1: RcRef::new(RwValue::new(String::from(text1))),
             text2: RcRef::new(RwValue::new(String::from(text2))),
             outer_wrapper_ref: RwValue::new(WeakRef::new()),
