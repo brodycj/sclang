@@ -10,9 +10,9 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sclcelldata::{create_cell_with_links, create_cell_with_text_only, enable_feature, is_debug_enabled, SCLCursor};
+use sclcelldata::{create_cell_with_links, create_cell_with_text_only, enable_feature, is_debug_enabled, SCLRef};
 
-pub type SCLDataMap = HashMap<String, SCLCursor>;
+pub type SCLDataMap = HashMap<String, SCLRef>;
 
 #[derive(Parser)]
 #[grammar_inline = r#"
