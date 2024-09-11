@@ -50,10 +50,10 @@ struct OuterCellWrapper {
     inner_sc_info_storage_ref: InnerSCInfoStorageRcRef,
 }
 
-type MiddleCellWrapperRcRef = RcRef<MiddleCellWrapper>;
+type MiddleCellWrapperRcRef = RcRef<LinkedSCManager>;
 
 // XXX TODO RECONSIDER NAMING FOR THIS LIFETIME MANAGER
-struct MiddleCellWrapper {
+struct LinkedSCManager {
     // NOTE: This is an object lifetime manager "wrapper" that helps keep data objects alive exactly as long as they are
     // directly or indirectly reachable from the outside via using SCLRef objects.
     // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
@@ -85,8 +85,8 @@ struct InnerSCInfoStorage {
     outer_wrapper_ref: RwWeakRef<OuterCellWrapper>,
     // XXX TBD NAMING OF THIS ??? ???
     sc_linkage_info_weak_ref: RwWeakRef<InnerSCLinkageInfo>,
-    linkage_strong_ref_wrapper: RwWeakRef<MiddleCellWrapper>,
-    inner_middle_cell_wrapper_ref: RwWeakRef<MiddleCellWrapper>,
+    linkage_strong_ref_wrapper: RwWeakRef<LinkedSCManager>,
+    inner_middle_cell_wrapper_ref: RwWeakRef<LinkedSCManager>,
 }
 
 static drop_cell_count: RwValue<i32> = RwValue::new(0);
@@ -117,7 +117,7 @@ pub fn reset_drop_cell_count() {
     *x = 0;
 }
 
-impl Drop for MiddleCellWrapper {
+impl Drop for LinkedSCManager {
     fn drop(&mut self) {
         if is_debug_enabled() {
             println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
@@ -182,7 +182,7 @@ impl Drop for MiddleCellWrapper {
 
 impl OuterCellWrapper {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
-        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_inner_cell_data(text1, text2, link1, link2);
+        let middle_cell_wrapper_ref = LinkedSCManager::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -253,7 +253,7 @@ impl OuterCellWrapper {
         };
 
         // XXX NEW OUTER-MOST MIDDLE LIFETIME WRAPPER - XXX TODO RENAME THIS
-        let middle_cell_wrapper_ref = MiddleCellWrapper::create_with_next_middle_cell_wrapper_data(next_middle_cell_wrapper_ref.clone(), link1, link2);
+        let middle_cell_wrapper_ref = LinkedSCManager::create_with_next_middle_cell_wrapper_data(next_middle_cell_wrapper_ref.clone(), link1, link2);
 
         // XXX TODO KEEP IN SINGLE STATEMENT LIKE THIS:
         // *next_middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap() = RcRef::downgrade(&outer_cell_wrapper_ref);
@@ -277,7 +277,7 @@ impl OuterCellWrapper {
     }
 }
 
-impl MiddleCellWrapper {
+impl LinkedSCManager {
     fn create_with_inner_cell_data(
         text1: &str,
         text2: &str,
@@ -293,7 +293,7 @@ impl MiddleCellWrapper {
         let mut cell_linkage_weak_writer = inner_sc_info_storage_ref.sc_linkage_info_weak_ref.write().unwrap();
         *cell_linkage_weak_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
-        let middle_cw_ref = RcRef::new(MiddleCellWrapper {
+        let middle_cw_ref = RcRef::new(LinkedSCManager {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwValue::new(WeakRef::new()),
@@ -322,7 +322,7 @@ impl MiddleCellWrapper {
         let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.sc_linkage_info_weak_ref.write().unwrap();
         *cell_linkage_weak_ref_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
-        let middle_wrapper_ref = RcRef::new(MiddleCellWrapper {
+        let middle_wrapper_ref = RcRef::new(LinkedSCManager {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwValue::new(next_middle_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
