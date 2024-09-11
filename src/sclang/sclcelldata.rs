@@ -4,9 +4,8 @@ use std::sync::{Arc, RwLock, Weak};
 #[derive(Clone)]
 pub struct SCLRef(PersistentSCManagerRef);
 
-// XXX TBD TEMPORARY ALIASING - XXX TODO IMPROVE INTERNAL struct naming
-type PersistentSCManagerRef = OuterCellWrapperRcRef;
-
+// XXX TBD TEMPORARY ALIASING / XXX - XXX TODO IMPROVE INTERNAL struct naming
+type PersistentSCManagerRef = RcRef<OuterCellWrapper>;
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
 // NOTE: While these type aliases may be ready to provide multi-threaded safety, the overall design
