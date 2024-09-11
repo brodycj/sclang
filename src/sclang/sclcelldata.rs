@@ -41,16 +41,16 @@ struct PersistentSCManager {
     //    which is expected to keep the strong reference to the SC linkage info
     //    (until it is superceded by a newer outer-most middle lifetime wrapper).
     //    XXX TODO NEED TO RENAME THIS FIELD TO BE MORE CLEAR & DESCRIPTIVE!!
-    middle_cell_wrapper: RwValue<LinkedSCManagerRcRef>,
+    middle_cell_wrapper: RwValue<LinkedSCLifetimeManagerRcRef>,
     // ** inner_sc_info_storage_ref - references (strong reference) where the data (text data) fields are stored,
     //    which in turn does keep a weak reference to the peer linkage
     inner_sc_info_storage_ref: SCInfoManagerRcRef,
 }
 
-type LinkedSCManagerRcRef = RcRef<LinkedSCManager>;
+type LinkedSCLifetimeManagerRcRef = RcRef<LinkedSCLifetimeManager>;
 
 // XXX TODO RECONSIDER NAMING FOR THIS LIFETIME MANAGER
-struct LinkedSCManager {
+struct LinkedSCLifetimeManager {
     // NOTE: This is an object lifetime manager "wrapper" that helps keep data objects alive exactly as long as they are
     // directly or indirectly reachable from the outside via using SCLRef objects.
     // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
@@ -65,13 +65,13 @@ struct LinkedSCManager {
     outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TODO EXPLAIN HOW THIS WORKS
     // XXX TBD NAMING - perhaps as "previous middle wrapper" / "older middle wrapper" / etc.
-    next_middle_wrapper: RwValue<Option<LinkedSCManagerRcRef>>,
+    next_middle_wrapper: RwValue<Option<LinkedSCLifetimeManagerRcRef>>,
 }
 
 // XXX TBD RECONSIDER NAMING ??? ???
 struct SCLinkageManager {
-    link1: Option<LinkedSCManagerRcRef>,
-    link2: Option<LinkedSCManagerRcRef>,
+    link1: Option<LinkedSCLifetimeManagerRcRef>,
+    link2: Option<LinkedSCLifetimeManagerRcRef>,
 }
 
 type SCInfoManagerRcRef = RcRef<SCInfoManager>;
@@ -82,8 +82,8 @@ struct SCInfoManager {
     outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TBD NAMING OF THIS ??? ???
     sc_linkage_info_weak_ref: RwWeakRef<SCLinkageManager>,
-    linkage_strong_ref_wrapper: RwWeakRef<LinkedSCManager>,
-    inner_middle_cell_wrapper_ref: RwWeakRef<LinkedSCManager>,
+    linkage_strong_ref_wrapper: RwWeakRef<LinkedSCLifetimeManager>,
+    inner_middle_cell_wrapper_ref: RwWeakRef<LinkedSCLifetimeManager>,
 }
 
 static drop_cell_count: RwValue<i32> = RwValue::new(0);
@@ -116,7 +116,7 @@ pub fn reset_drop_cell_count() {
     *x = 0;
 }
 
-impl Drop for LinkedSCManager {
+impl Drop for LinkedSCLifetimeManager {
     fn drop(&mut self) {
         if is_debug_enabled() {
             // XXX TODO UPDATE THIS INFO TEXT
@@ -181,8 +181,13 @@ impl Drop for LinkedSCManager {
 }
 
 impl PersistentSCManager {
-    fn create_with_cell_data(text1: &str, text2: &str, link1: Option<LinkedSCManagerRcRef>, link2: Option<LinkedSCManagerRcRef>) -> PersistentSCManagerRcRef {
-        let middle_cell_wrapper_ref = LinkedSCManager::create_with_inner_cell_data(text1, text2, link1, link2);
+    fn create_with_cell_data(
+        text1: &str,
+        text2: &str,
+        link1: Option<LinkedSCLifetimeManagerRcRef>,
+        link2: Option<LinkedSCLifetimeManagerRcRef>,
+    ) -> PersistentSCManagerRcRef {
+        let middle_cell_wrapper_ref = LinkedSCLifetimeManager::create_with_inner_cell_data(text1, text2, link1, link2);
         let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -193,7 +198,7 @@ impl PersistentSCManager {
         outer_wrapper_ref
     }
 
-    fn create_with_middle_wrapper_ref(middle_cell_wrapper_ref: LinkedSCManagerRcRef) -> PersistentSCManagerRcRef {
+    fn create_with_middle_wrapper_ref(middle_cell_wrapper_ref: LinkedSCLifetimeManagerRcRef) -> PersistentSCManagerRcRef {
         let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
@@ -204,7 +209,11 @@ impl PersistentSCManager {
         outer_wrapper_ref
     }
 
-    fn update_sc_linkage(outer_cell_wrapper_ref: PersistentSCManagerRcRef, link1: Option<LinkedSCManagerRcRef>, link2: Option<LinkedSCManagerRcRef>) {
+    fn update_sc_linkage(
+        outer_cell_wrapper_ref: PersistentSCManagerRcRef,
+        link1: Option<LinkedSCLifetimeManagerRcRef>,
+        link2: Option<LinkedSCLifetimeManagerRcRef>,
+    ) {
         // XXX TODO BOTH THIS CODE & THESE COMMENTS ARE WAY TO MUCH - NEED TO COMPLETELY REWRITE BOTH THIS CODE HERE & THESE COMMENTS
         // NOTE: This should create a new middle lifetime wrapper, which contains linkage for both peer links.
         // In case there is both inner middle lifetime wrapper & one more middle lifetime wrapper,
@@ -253,7 +262,7 @@ impl PersistentSCManager {
         };
 
         // XXX NEW OUTER-MOST MIDDLE LIFETIME WRAPPER - XXX TODO RENAME THIS
-        let middle_cell_wrapper_ref = LinkedSCManager::create_with_next_middle_cell_wrapper_data(next_middle_cell_wrapper_ref.clone(), link1, link2);
+        let middle_cell_wrapper_ref = LinkedSCLifetimeManager::create_with_next_middle_cell_wrapper_data(next_middle_cell_wrapper_ref.clone(), link1, link2);
 
         // XXX TODO KEEP IN SINGLE STATEMENT LIKE THIS:
         // *next_middle_cell_wrapper_ref.outer_wrapper_ref.write().unwrap() = RcRef::downgrade(&outer_cell_wrapper_ref);
@@ -266,7 +275,7 @@ impl PersistentSCManager {
         *middle_cell_wrapper_writer = middle_cell_wrapper_ref.clone();
     }
 
-    fn ref_middle_cell_wrapper_ref(middle_cell_wrapper_ref: LinkedSCManagerRcRef) -> PersistentSCManagerRcRef {
+    fn ref_middle_cell_wrapper_ref(middle_cell_wrapper_ref: LinkedSCLifetimeManagerRcRef) -> PersistentSCManagerRcRef {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
@@ -277,13 +286,13 @@ impl PersistentSCManager {
     }
 }
 
-impl LinkedSCManager {
+impl LinkedSCLifetimeManager {
     fn create_with_inner_cell_data(
         text1: &str,
         text2: &str,
-        link1: Option<LinkedSCManagerRcRef>,
-        link2: Option<LinkedSCManagerRcRef>,
-    ) -> LinkedSCManagerRcRef {
+        link1: Option<LinkedSCLifetimeManagerRcRef>,
+        link2: Option<LinkedSCLifetimeManagerRcRef>,
+    ) -> LinkedSCLifetimeManagerRcRef {
         let mut inner_sc_info_storage = SCInfoManager::create_with_inner_text_fields(text1, text2);
 
         let cell_linkage_strong_ref = RwValue::new(Some(SCLinkageManager::create_with_middle_cw_links(link1.clone(), link2.clone())));
@@ -293,7 +302,7 @@ impl LinkedSCManager {
         let mut cell_linkage_weak_writer = inner_sc_info_storage_ref.sc_linkage_info_weak_ref.write().unwrap();
         *cell_linkage_weak_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
-        let middle_cw_ref = RcRef::new(LinkedSCManager {
+        let middle_cw_ref = RcRef::new(LinkedSCLifetimeManager {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwValue::new(WeakRef::new()),
@@ -307,10 +316,10 @@ impl LinkedSCManager {
     }
 
     fn create_with_next_middle_cell_wrapper_data(
-        next_middle_wrapper: LinkedSCManagerRcRef,
-        link1: Option<LinkedSCManagerRcRef>,
-        link2: Option<LinkedSCManagerRcRef>,
-    ) -> LinkedSCManagerRcRef {
+        next_middle_wrapper: LinkedSCLifetimeManagerRcRef,
+        link1: Option<LinkedSCLifetimeManagerRcRef>,
+        link2: Option<LinkedSCLifetimeManagerRcRef>,
+    ) -> LinkedSCLifetimeManagerRcRef {
         let inner_sc_info_storage = next_middle_wrapper.clone().inner_sc_info_storage.clone();
 
         let cell_linkage_strong_ref = RwValue::new(Some(SCLinkageManager::create_with_middle_cw_links(link1.clone(), link2.clone())));
@@ -322,7 +331,7 @@ impl LinkedSCManager {
         let mut cell_linkage_weak_ref_writer = inner_sc_info_storage_ref.sc_linkage_info_weak_ref.write().unwrap();
         *cell_linkage_weak_ref_writer = RcRef::downgrade(&cell_linkage_strong_ref.read().unwrap().clone().unwrap());
 
-        let middle_wrapper_ref = RcRef::new(LinkedSCManager {
+        let middle_wrapper_ref = RcRef::new(LinkedSCLifetimeManager {
             inner_sc_info_storage: inner_sc_info_storage.clone(),
             inner_sc_linkage_info_strong_ref: cell_linkage_strong_ref,
             outer_wrapper_ref: RwValue::new(next_middle_wrapper.clone().outer_wrapper_ref.read().unwrap().clone()),
@@ -365,17 +374,17 @@ impl LinkedSCManager {
 
 impl SCLinkageManager {
     // XXX TBD SUPPORT CREATE API FN WITH EMPTY LINKS ???
-    fn create_with_middle_cw_links(link1: Option<LinkedSCManagerRcRef>, link2: Option<LinkedSCManagerRcRef>) -> RcRef<SCLinkageManager> {
+    fn create_with_middle_cw_links(link1: Option<LinkedSCLifetimeManagerRcRef>, link2: Option<LinkedSCLifetimeManagerRcRef>) -> RcRef<SCLinkageManager> {
         RcRef::new(SCLinkageManager { link1, link2 })
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_link1(&self) -> Option<LinkedSCManagerRcRef> {
+    fn get_link1(&self) -> Option<LinkedSCLifetimeManagerRcRef> {
         self.link1.clone()
     }
 
     // XXX TBD API - KEEP THIS XXX ??? ???
-    fn get_link2(&self) -> Option<LinkedSCManagerRcRef> {
+    fn get_link2(&self) -> Option<LinkedSCLifetimeManagerRcRef> {
         self.link2.clone()
     }
 }
@@ -530,7 +539,7 @@ impl SCLRef {
         dump
     }
 
-    fn get_middle_cell_wrapper(&self) -> LinkedSCManagerRcRef {
+    fn get_middle_cell_wrapper(&self) -> LinkedSCLifetimeManagerRcRef {
         self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
