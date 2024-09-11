@@ -119,6 +119,7 @@ pub fn reset_drop_cell_count() {
 impl Drop for LinkedSCManager {
     fn drop(&mut self) {
         if is_debug_enabled() {
+            // XXX TODO UPDATE THIS INFO TEXT
             println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
             println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
             println!("- text 2: {}", self.inner_sc_info_storage.text2.read().unwrap());
