@@ -55,7 +55,7 @@ type LinkedSCManagerRcRef = RcRef<LinkedSCLifetimeManager>;
 
 // XXX TBD IMPROVE NAMING & ADD DESCRIPTION FOR THIS LIFETIME MANAGER
 // NOTE: This is an SCL object / data lifetime manager that helps keep data objects alive exactly as long as they are
-// directly or indirectly reachable from the outside via using SCLRef objects.
+// directly or indirectly reachable from the outside via SCLRef objects.
 // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
 // unreadable SCL data cell objects to be automatically dropped & cleaned up once they are no longer reachable from the outside.
 // XXX TODO NEED GOOD EXPLANATION OF THE STRATEGY FOR THIS !!!
