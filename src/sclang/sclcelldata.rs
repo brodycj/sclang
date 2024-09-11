@@ -5,8 +5,8 @@ use std::sync::{Arc, RwLock, Weak};
 pub struct SCLRef(PersistentSCManagerRef);
 
 // XXX TBD TEMPORARY ALIASING / XXX - XXX TODO IMPROVE INTERNAL struct naming
-type PersistentSCManagerRef = RcRef<OuterCellWrapper>;
-type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
+type PersistentSCManagerRef = RcRef<PersistentSCManager>;
+type OuterCellWrapperRcRef = RcRef<PersistentSCManager>;
 
 // NOTE: While these type aliases may be ready to provide multi-threaded safety, the overall design
 // of this library is not yet ready to be considered safe for multi-threaded access.
@@ -34,7 +34,7 @@ pub fn is_debug_enabled() -> bool {
 // XXX TODO NEED TO RECONSIDER BOTH NAMING AND HOW MUCH DESCRIPTIVE TEXT TO KEEP OR UPDATE;
 // HOPEFULLY BETTER NAMING CAN REDUCE THE NEED FOR SOME OF THE DESCRIPTIVE TEXT HERE
 
-struct OuterCellWrapper {
+struct PersistentSCManager {
     // NOTE: SCLRef keeps a reference to this "outer wrapper", which also acts as a top-level lifetime manager
     // for SCL data cell objects which are *indirectly* referenced by SCLRef objects.
     // -- END OF NOTE
@@ -64,7 +64,7 @@ struct LinkedSCManager {
     // QUICK RATIONALE: outer-most middle lifetime wrapper is expected to keep the strong reference to the SC linkage info
     // (until it is superceded by a newer outer-most middle lifetime wrapper)
     inner_sc_linkage_info_strong_ref: RwValue<Option<RcRef<InnerSCLinkageInfo>>>,
-    outer_wrapper_ref: RwWeakRef<OuterCellWrapper>,
+    outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TODO EXPLAIN HOW THIS WORKS
     // XXX TBD NAMING - perhaps as "previous middle wrapper" / "older middle wrapper" / etc.
     next_middle_wrapper: RwValue<Option<MiddleCellWrapperRcRef>>,
@@ -81,7 +81,7 @@ type InnerSCInfoStorageRcRef = RcRef<InnerSCInfoStorage>;
 struct InnerSCInfoStorage {
     text1: RcRef<RwValue<String>>,
     text2: RcRef<RwValue<String>>,
-    outer_wrapper_ref: RwWeakRef<OuterCellWrapper>,
+    outer_wrapper_ref: RwWeakRef<PersistentSCManager>,
     // XXX TBD NAMING OF THIS ??? ???
     sc_linkage_info_weak_ref: RwWeakRef<InnerSCLinkageInfo>,
     linkage_strong_ref_wrapper: RwWeakRef<LinkedSCManager>,
@@ -179,10 +179,10 @@ impl Drop for LinkedSCManager {
     }
 }
 
-impl OuterCellWrapper {
+impl PersistentSCManager {
     fn create_with_cell_data(text1: &str, text2: &str, link1: Option<MiddleCellWrapperRcRef>, link2: Option<MiddleCellWrapperRcRef>) -> OuterCellWrapperRcRef {
         let middle_cell_wrapper_ref = LinkedSCManager::create_with_inner_cell_data(text1, text2, link1, link2);
-        let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
+        let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
         });
@@ -193,7 +193,7 @@ impl OuterCellWrapper {
     }
 
     fn create_with_middle_wrapper_ref(middle_cell_wrapper_ref: MiddleCellWrapperRcRef) -> OuterCellWrapperRcRef {
-        let outer_wrapper_ref = RcRef::new(OuterCellWrapper {
+        let outer_wrapper_ref = RcRef::new(PersistentSCManager {
             middle_cell_wrapper: RwValue::new(middle_cell_wrapper_ref.clone()),
             inner_sc_info_storage_ref: middle_cell_wrapper_ref.inner_sc_info_storage.clone(),
         });
@@ -269,7 +269,7 @@ impl OuterCellWrapper {
         // XXX TODO USE MATCH INSTEAD HERE
         let mut my_outer_wrapper_ref = middle_cell_wrapper_ref.outer_wrapper_ref.read().unwrap().upgrade();
         if my_outer_wrapper_ref.is_none() {
-            OuterCellWrapper::create_with_middle_wrapper_ref(middle_cell_wrapper_ref)
+            PersistentSCManager::create_with_middle_wrapper_ref(middle_cell_wrapper_ref)
         } else {
             my_outer_wrapper_ref.unwrap()
         }
@@ -428,7 +428,7 @@ impl SCLRef {
         let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(PersistentSCManager::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
@@ -449,7 +449,7 @@ impl SCLRef {
         let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link2.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(PersistentSCManager::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
@@ -463,7 +463,7 @@ impl SCLRef {
 
         let my_outer_wrapper_ref = self.0.clone();
         // NOTE: This should update the SC linkage so that it links to the outer-most middle lifetime wrapper for both linked SC peers.
-        OuterCellWrapper::update_sc_linkage(
+        PersistentSCManager::update_sc_linkage(
             my_outer_wrapper_ref,
             match link1 {
                 Some(r) => Some(r.get_middle_cell_wrapper()),
@@ -540,7 +540,7 @@ impl SCLRef {
 
 pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLRef {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
-    let x = SCLRef::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
+    let x = SCLRef::from_outer_cell_wrapper(PersistentSCManager::create_with_cell_data(text1, text2, None, None));
     // XXX TODO THIS UPDATE IS NOT NEEDED AS THERE ARE NO PEERS TO LINK TO AT THIS POINT
     x.update_data(text1, text2, None, None);
     x
@@ -548,7 +548,7 @@ pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLRef {
 
 pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLRef, link2: SCLRef) -> SCLRef {
     // XXX TODO USE UTIL FN HERE
-    let cw = OuterCellWrapper::create_with_cell_data(
+    let cw = PersistentSCManager::create_with_cell_data(
         text1,
         text2,
         // XXX TBD SHOULD BE NO NEED TO CREATE WITH THE LINKS AT THIS POINT
