@@ -36,5 +36,6 @@ jobs:
           - iai-bench-1
           - iai-bench-2
     steps:
+    - run: sudo apt install valgrind
     - uses: actions/checkout@v4
     - run: cargo bench --bench ${{ matrix.bench }} -- --verbose
