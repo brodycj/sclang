@@ -27,3 +27,18 @@ jobs:
     - uses: actions/checkout@v4
     - name: check fmt
       run: cargo build --verbose
+
+  # XXX TODO THIS IS A TEMPORARY SOLUTION, PERMANENT SOLUTION SHOULD BE FOR AUTO COMMENTING ON PRs
+  # IN A SIMILAR FASHION TO THIS GitHub action but working for `iai`, NOT for Criterion:
+  # - https://github.com/marketplace/actions/criterion-compare-prs
+  iai-bench-verbose:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bench:
+          - iai-bench-1
+          - iai-bench-2
+    steps:
+    - run: sudo apt install valgrind
+    - uses: actions/checkout@v4
+    - run: cargo bench --bench ${{ matrix.bench }} -- --verbose
