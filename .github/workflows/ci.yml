@@ -31,7 +31,7 @@ jobs:
   # XXX TODO THIS IS A TEMPORARY SOLUTION, PERMANENT SOLUTION SHOULD BE FOR AUTO COMMENTING ON PRs
   # IN A SIMILAR FASHION TO THIS GitHub action but working for `iai`, NOT for Criterion:
   # - https://github.com/marketplace/actions/criterion-compare-prs
-  log-iai-bench-verbose-output:
+  iai-bench-verbose:
     runs-on: ubuntu-latest
     strategy:
       matrix:
