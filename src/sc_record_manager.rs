@@ -21,6 +21,7 @@ type RwWeakRef<T> = RwValue<WeakRef<T>>;
 // XXX SHARED DATA - XXX TODO IMPROVE INTERNAL API
 static scl_debug: RwValue<bool> = RwValue::new(false);
 
+#[cfg(test)]
 pub fn is_debug_enabled() -> bool {
     *scl_debug.read().unwrap()
 }
@@ -108,10 +109,12 @@ impl Drop for InnerSCInfoStorage {
     }
 }
 
+#[cfg(test)]
 pub fn get_drop_cell_count() -> i32 {
     drop_cell_count.read().unwrap().clone()
 }
 
+#[cfg(test)]
 pub fn reset_drop_cell_count() {
     let mut x = drop_cell_count.write().unwrap();
     *x = 0;
@@ -567,6 +570,7 @@ pub fn create_sc_record_with_links(text1: &str, text2: &str, link1: SCRecordRef,
     x
 }
 
+#[cfg(test)]
 pub fn enable_feature(feature_name: &str) {
     match feature_name {
         "debug" => {
