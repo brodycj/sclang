@@ -27,7 +27,11 @@ jobs:
     - uses: actions/checkout@v4
     - name: check fmt
       run: cargo build --verbose
+```suggestion
 
+  # XXX TODO THIS IS A TEMPORARY SOLUTION, PERMANENT SOLUTION SHOULD BE FOR AUTO COMMENTING ON PRs
+  # IN A SIMILAR FASHION TO THIS GitHub action but working for `iai`, NOT for Criterion:
+  # - https://github.com/marketplace/actions/criterion-compare-prs
   log-iai-bench-verbose-output:
     runs-on: ubuntu-latest
     strategy:
