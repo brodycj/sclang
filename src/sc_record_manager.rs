@@ -90,8 +90,10 @@ struct InnerSCInfoStorage {
     inner_middle_cell_wrapper_ref: RwWeakRef<MiddleCellWrapper>,
 }
 
+#[cfg(test)]
 static drop_cell_count: RwValue<i32> = RwValue::new(0);
 
+#[cfg(test)]
 impl Drop for InnerSCInfoStorage {
     fn drop(&mut self) {
         if is_debug_enabled() {
@@ -122,6 +124,7 @@ pub fn reset_drop_cell_count() {
 
 impl Drop for MiddleCellWrapper {
     fn drop(&mut self) {
+        #[cfg(test)]
         if is_debug_enabled() {
             println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
             println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
@@ -570,8 +573,8 @@ pub fn create_sc_record_with_links(text1: &str, text2: &str, link1: SCRecordRef,
     x
 }
 
-#[cfg(test)]
 pub fn enable_feature(feature_name: &str) {
+    #[cfg(test)]
     match feature_name {
         "debug" => {
             *scl_debug.write().unwrap() = true;
