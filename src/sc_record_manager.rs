@@ -574,8 +574,8 @@ pub fn create_sc_record_with_links(text1: &str, text2: &str, link1: SCRecordRef,
 }
 
 pub fn enable_feature(feature_name: &str) {
-    #[cfg(test)]
     match feature_name {
+        #[cfg(test)]
         "debug" => {
             *scl_debug.write().unwrap() = true;
             println!("DEBUG ENABLED");
