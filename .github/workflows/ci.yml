@@ -51,6 +51,8 @@ jobs:
     - run: sudo apt install valgrind
     - name: actions/checkout@v4 - ${{ matrix.baseline }}
       uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.baseline }}
       if: ${{ matrix.baseline != 'HEAD^' }}
     - name: 'actions/checkout@v4 - fetch-depth: 2 for HEAD^'
       uses: actions/checkout@v4
