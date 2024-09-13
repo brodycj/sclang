@@ -64,7 +64,10 @@ jobs:
     - run: git log -1 # should show the commit for baseline
     - name: ${{ matrix.bench }} - baseline (${{ matrix.baseline }})
       run: cargo bench --bench ${{ matrix.bench }} --quiet
-    - uses: actions/checkout@v4
+    - name: 'actions/checkout@v4 - clean: false (to keep iai results from baseline for comparison)'
+      uses: actions/checkout@v4
+      with:
+        clean: false
     - run: git log -1 # should show the commit under CI testing
     - name: ${{ matrix.bench }} - should show comparison for any changes from baseline (${{ matrix.baseline }})
       run: cargo bench --bench ${{ matrix.bench }} --quiet
