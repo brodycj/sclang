@@ -60,7 +60,7 @@ jobs:
     - run: git checkout HEAD^
       if: ${{ matrix.baseline == 'HEAD^' }}
     - run: git log -1 # should show the commit for baseline
-    - name: ${{ matrix.bench }} - baseline: ${{ matrix.baseline }}
+    - name: ${{ matrix.bench }} - baseline (${{ matrix.baseline }})
       run: cargo bench --bench ${{ matrix.bench }} --quiet
     - uses: actions/checkout@v4
     - run: git log -1 # should show the commit under CI testing
