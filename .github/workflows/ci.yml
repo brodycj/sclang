@@ -36,6 +36,8 @@ jobs:
   # - https://github.com/marketplace/actions/criterion-compare-prs
   iai-bench-verbose:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Awarnings # IGNORE WARNINGS FOR NOW to keep the output clean in the various cargo bench steps
     strategy:
       matrix:
         bench:
@@ -47,16 +49,16 @@ jobs:
       with:
         fetch-depth: 2
     - name: ${{ matrix.bench }} - HEAD
-      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+      run: cargo bench --bench ${{ matrix.bench }} --quiet
     - name: remove target/iai to avoid possibly confusing comparison (going the wrong way)
       run: rm -rf target/iai
     - run: git checkout HEAD^
     - name: ${{ matrix.bench }} - HEAD^
-      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+      run: cargo bench --bench ${{ matrix.bench }} --quiet
     - name: remove target/iai (again) to avoid possibly confusing comparison (going the wrong way)
       run: rm -rf target/iai
     - uses: actions/checkout@v4
       with:
         ref: main
     - name: ${{ matrix.bench }} - main - XXX TBD OBVIOUSLY USELESS FOR COMMIT ON MAIN BRANCH - XXX TODO RESOLVE THIS
-      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+      run: cargo bench --bench ${{ matrix.bench }} --quiet
