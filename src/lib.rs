@@ -1,4 +1,4 @@
-mod sclmanager;
+pub mod sclmanager;
 
 pub mod sclang;
 
