@@ -8,6 +8,8 @@ STATUS: EXPERIMENTAL WITH NO GUARANTEES WHATSOEVER NEEDS MASSIVE CLEANUP & LIKEL
 
 HOW (DON'T ASK): Using cell-like data structures with strong (A)RC references & weak (A)RC references to manage data cell & data cell linkage lifetime - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
 
+XXX TODO DOCUMENT programmatic `sclang` & `sc_record_manager` APIs
+
 MAJOR TODO ITEM IS TO SUPPORT `no_std` environment for EMBEDDED SYSTEMS
 
 BENCHMARKS ARE VERY ROUGH & LIKELY AFFECTED BY ADDITIONAL SCLang parsing overhead
