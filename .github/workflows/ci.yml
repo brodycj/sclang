@@ -34,14 +34,40 @@ jobs:
   # XXX TODO THIS IS A TEMPORARY SOLUTION, PERMANENT SOLUTION SHOULD BE FOR AUTO COMMENTING ON PRs
   # IN A SIMILAR FASHION TO THIS GitHub action but working for `iai`, NOT for Criterion:
   # - https://github.com/marketplace/actions/criterion-compare-prs
-  iai-bench-verbose:
+  iai-bench-output:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Awarnings # IGNORE WARNINGS FOR NOW to keep the output clean in the various cargo bench steps
     strategy:
       matrix:
         bench:
           - iai-bench-1
           - iai-bench-2
+        baseline:
+          - HEAD^
+          # XXX TODO: COMPARISON to main would be useless on main branch itself - XXX TODO RESOLVE THIS
+          - main
     steps:
     - run: sudo apt install valgrind
-    - uses: actions/checkout@v4
-    - run: cargo bench --bench ${{ matrix.bench }} -- --verbose
+    - name: actions/checkout@v4 - ${{ matrix.baseline }}
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.baseline }}
+      if: ${{ matrix.baseline != 'HEAD^' }}
+    - name: 'actions/checkout@v4 - fetch-depth: 2 for HEAD^'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+      if: ${{ matrix.baseline == 'HEAD^' }}
+    - run: git checkout HEAD^
+      if: ${{ matrix.baseline == 'HEAD^' }}
+    - run: git log -1 # should show the commit for baseline
+    - name: ${{ matrix.bench }} - baseline (${{ matrix.baseline }})
+      run: cargo bench --bench ${{ matrix.bench }} --quiet
+    - name: 'actions/checkout@v4 - clean: false (to keep iai results from baseline for comparison)'
+      uses: actions/checkout@v4
+      with:
+        clean: false
+    - run: git log -1 # should show the commit under CI testing
+    - name: ${{ matrix.bench }} - should show comparison for any changes from baseline (${{ matrix.baseline }})
+      run: cargo bench --bench ${{ matrix.bench }} --quiet
