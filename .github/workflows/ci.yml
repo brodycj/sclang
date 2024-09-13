@@ -43,22 +43,26 @@ jobs:
         bench:
           - iai-bench-1
           - iai-bench-2
+        baseline:
+          - HEAD^
+          # XXX TODO: COMPARISON to main would be useless on main branch itself - XXX TODO RESOLVE THIS
+          - main
     steps:
     - run: sudo apt install valgrind
-    - uses: actions/checkout@v4
+    - name: actions/checkout@v4 - ${{ matrix.baseline }}
+      uses: actions/checkout@v4
+      if: ${{ matrix.baseline != 'HEAD^' }}
+    - name: 'actions/checkout@v4 - fetch-depth: 2 for HEAD^'
+      uses: actions/checkout@v4
       with:
         fetch-depth: 2
-    - name: ${{ matrix.bench }} - HEAD
-      run: cargo bench --bench ${{ matrix.bench }} --quiet
-    - name: remove target/iai to avoid possibly confusing comparison (going the wrong way)
-      run: rm -rf target/iai
+      if: ${{ matrix.baseline == 'HEAD^' }}
     - run: git checkout HEAD^
-    - name: ${{ matrix.bench }} - HEAD^
+      if: ${{ matrix.baseline == 'HEAD^' }}
+    - run: git log -1 # should show the commit for baseline
+    - name: ${{ matrix.bench }} - baseline: ${{ matrix.baseline }}
       run: cargo bench --bench ${{ matrix.bench }} --quiet
-    - name: remove target/iai (again) to avoid possibly confusing comparison (going the wrong way)
-      run: rm -rf target/iai
     - uses: actions/checkout@v4
-      with:
-        ref: main
-    - name: ${{ matrix.bench }} - main - XXX TBD OBVIOUSLY USELESS FOR COMMIT ON MAIN BRANCH - XXX TODO RESOLVE THIS
+    - run: git log -1 # should show the commit under CI testing
+    - name: ${{ matrix.bench }} - should show comparison for any changes from baseline: (${{ matrix.baseline }})
       run: cargo bench --bench ${{ matrix.bench }} --quiet
