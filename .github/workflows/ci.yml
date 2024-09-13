@@ -64,5 +64,5 @@ jobs:
       run: cargo bench --bench ${{ matrix.bench }} --quiet
     - uses: actions/checkout@v4
     - run: git log -1 # should show the commit under CI testing
-    - name: ${{ matrix.bench }} - should show comparison for any changes from baseline: (${{ matrix.baseline }})
+    - name: ${{ matrix.bench }} - should show comparison for any changes from baseline (${{ matrix.baseline }})
       run: cargo bench --bench ${{ matrix.bench }} --quiet
