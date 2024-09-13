@@ -21,7 +21,6 @@ type RwWeakRef<T> = RwValue<WeakRef<T>>;
 // XXX SHARED DATA - XXX TODO IMPROVE INTERNAL API
 static scl_debug: RwValue<bool> = RwValue::new(false);
 
-#[cfg(test)]
 pub fn is_debug_enabled() -> bool {
     *scl_debug.read().unwrap()
 }
@@ -90,10 +89,8 @@ struct InnerSCInfoStorage {
     inner_middle_cell_wrapper_ref: RwWeakRef<MiddleCellWrapper>,
 }
 
-#[cfg(test)]
 static drop_cell_count: RwValue<i32> = RwValue::new(0);
 
-#[cfg(test)]
 impl Drop for InnerSCInfoStorage {
     fn drop(&mut self) {
         if is_debug_enabled() {
@@ -111,12 +108,10 @@ impl Drop for InnerSCInfoStorage {
     }
 }
 
-#[cfg(test)]
 pub fn get_drop_cell_count() -> i32 {
     drop_cell_count.read().unwrap().clone()
 }
 
-#[cfg(test)]
 pub fn reset_drop_cell_count() {
     let mut x = drop_cell_count.write().unwrap();
     *x = 0;
@@ -124,7 +119,6 @@ pub fn reset_drop_cell_count() {
 
 impl Drop for MiddleCellWrapper {
     fn drop(&mut self) {
-        #[cfg(test)]
         if is_debug_enabled() {
             println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
             println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
@@ -575,7 +569,6 @@ pub fn create_sc_record_with_links(text1: &str, text2: &str, link1: SCRecordRef,
 
 pub fn enable_feature(feature_name: &str) {
     match feature_name {
-        #[cfg(test)]
         "debug" => {
             *scl_debug.write().unwrap() = true;
             println!("DEBUG ENABLED");

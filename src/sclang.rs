@@ -10,10 +10,7 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sc_record_manager::{create_sc_record_with_links, create_sc_record_with_text_only, enable_feature, SCRecordRef};
-
-#[cfg(test)]
-use sc_record_manager::is_debug_enabled;
+use sc_record_manager::{create_sc_record_with_links, create_sc_record_with_text_only, enable_feature, is_debug_enabled, SCRecordRef};
 
 pub type SCLDataMap = HashMap<String, SCRecordRef>;
 
@@ -93,7 +90,6 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                         );
                                         let mut r = String::new();
                                         writeln!(r, "STORED DATA FOR SYMBOL - {}", symbol_name);
-                                        #[cfg(test)]
                                         if is_debug_enabled() {
                                             write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
                                         }
@@ -121,7 +117,6 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                             );
                                             let mut r = String::new();
                                             writeln!(r, "UPDATED DATA FOR SYMBOL - {}", symbol_name);
-                                            #[cfg(test)]
                                             if is_debug_enabled() {
                                                 write!(r, "{}", m.get(&String::from(symbol_name)).unwrap().get_dump());
                                             }
