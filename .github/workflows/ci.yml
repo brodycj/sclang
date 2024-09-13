@@ -44,4 +44,11 @@ jobs:
     steps:
     - run: sudo apt install valgrind
     - uses: actions/checkout@v4
-    - run: cargo bench --bench ${{ matrix.bench }} -- --verbose
+    - name: ${{ matrix.bench }} - HEAD
+      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+    - run: git checkout HEAD^
+    - name: ${{ matrix.bench }} - HEAD^
+      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+    - run: git checkout main # XXX NOTE: This would obviously be useless on any commit now on main branch - XXX TODO RESOLVE THIS
+    - name: ${{ matrix.bench }} - main
+      run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
