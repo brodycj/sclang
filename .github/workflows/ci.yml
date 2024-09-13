@@ -48,9 +48,13 @@ jobs:
         fetch-depth: 2
     - name: ${{ matrix.bench }} - HEAD
       run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+    - name: remove target/iai to avoid possibly confusing comparison (going the wrong way)
+      run: rm -rf target/iai
     - run: git checkout HEAD^
     - name: ${{ matrix.bench }} - HEAD^
       run: RUSTFLAGS=-Awarnings cargo bench --bench ${{ matrix.bench }} --quiet
+    - name: remove target/iai (again) to avoid possibly confusing comparison (going the wrong way)
+      run: rm -rf target/iai
     - uses: actions/checkout@v4
       with:
         ref: main
