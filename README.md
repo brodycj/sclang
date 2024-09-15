@@ -2,11 +2,13 @@
 
 LICENSE: MIT OR APACHE 2.0
 
-USING REFERENCE MANAGEMENT CELLS WITH HELP FROM STRONG & WEAK REFERENCES TO AVOID THE NEED FOR PERIODIC OR RANDOM GC OVERHEAD
+USING REFERENCE MANAGEMENT OBJECTS WITH HELP FROM STRONG & WEAK REFERENCES TO AVOID THE NEED FOR PERIODIC OR RANDOM GC OVERHEAD
 
 STATUS: EXPERIMENTAL WITH NO GUARANTEES WHATSOEVER NEEDS MASSIVE CLEANUP & LIKELY NEEDS MASSIVE OPTIMIZATION, MULTI-THREADING NOT EXPECTED TO WORK
 
-HOW (DON'T ASK): Using cell-like data structures with strong (A)RC references & weak (A)RC references to manage data cell & data cell linkage lifetime - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
+HOW: Using data record cell objects with strong (A)RC references & weak (A)RC references to manage data record & data record linkage lifetimes - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
+
+XXX TODO DOCUMENT programmatic `sclang` & `sc_data_record_manager` APIs
 
 MAJOR TODO ITEM IS TO SUPPORT `no_std` environment for EMBEDDED SYSTEMS
 
@@ -517,7 +519,7 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "a-text-1"
 - text 2: "a-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA RECORD with info:
 - text 1: "a-text-1"
 - text 2: "a-text-2"
 DROP CELL COUNT: 1
@@ -526,7 +528,7 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "b-text-1"
 - text 2: "b-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA RECORD with info:
 - text 1: "b-text-1"
 - text 2: "b-text-2"
 DROP CELL COUNT: 2
@@ -535,7 +537,7 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "c-text-1"
 - text 2: "c-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA RECORD with info:
 - text 1: "c-text-1"
 - text 2: "c-text-2"
 DROP CELL COUNT: 3
@@ -544,7 +546,7 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "d-text-1"
 - text 2: "d-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA RECORD with info:
 - text 1: "d-text-1"
 - text 2: "d-text-2"
 DROP CELL COUNT: 4
@@ -553,7 +555,7 @@ DROP MIDDLE CELL WRAPPER for CELL DATA with info
 - text 1: "e-text-1"
 - text 2: "e-text-2"
 --- --- ---
-DROP CELL DATA with info:
+DROP SC DATA RECORD with info:
 - text 1: "e-text-1"
 - text 2: "e-text-2"
 DROP CELL COUNT: 5
