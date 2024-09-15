@@ -29,15 +29,15 @@ pub fn is_debug_enabled() -> bool {
 
 // XXX TODO EXPLAIN RATIONALE FOR THESE WRAPPERS
 // XXX QUICK EXPLANATION OF WRAPPERS:
-// OUTER WRAPPER (as aliased to: StrongSCRecordManagerRcRef) IS USED BY SCRecordRef TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
+// OUTER WRAPPER (as aliased to: StrongSCDataRecordManagerRcRef) IS USED BY SCDataRecordRef TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
 // MIDDLE WRAPPER IS ACTUALLY MIDDLE LIFETIME WRAPPER TO HELP MAINTAIN LIFETIME WITHOUT ANY STRONG REFERENCE CYCLES
 
 // XXX TODO NEED TO RECONSIDER BOTH NAMING AND HOW MUCH DESCRIPTIVE TEXT TO KEEP OR UPDATE;
 // HOPEFULLY BETTER NAMING CAN REDUCE THE NEED FOR SOME OF THE DESCRIPTIVE TEXT HERE
 
 struct OuterCellWrapper {
-    // NOTE: SCRecordRef keeps a reference to this "outer wrapper", which also acts as a strong top-level lifetime manager
-    // for SC record objects which are *indirectly* referenced by SCRecordRef objects.
+    // NOTE: SCDataRecordRef keeps a reference to this "outer wrapper", which also acts as a strong top-level lifetime manager
+    // for SC data record objects which are *indirectly* referenced by SCDataRecordRef objects.
     // -- END OF NOTE
     // This wrapper contains the following important fields:
     // ** middle_cell_wrapper - references the outer-most middle lifetime wrapper (OUTER-MIDDLE LIFETIME WRAPPER),
@@ -55,7 +55,7 @@ type MiddleCellWrapperRcRef = RcRef<MiddleCellWrapper>;
 // XXX TODO RECONSIDER NAMING FOR THIS LIFETIME MANAGER
 struct MiddleCellWrapper {
     // NOTE: This is an object lifetime manager "wrapper" that helps keep data objects alive exactly as long as they are
-    // directly or indirectly reachable from the outside via using SCRecordRef objects.
+    // directly or indirectly reachable from the outside via using SCDataRecordRef objects.
     // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
     // unreadable SCL data cell objects to be automatically dropped & cleaned up once they are no longer reachable from the outside.
     // XXX TODO NEED GOOD EXPLANATION OF THE STRATEGY FOR THIS !!!
@@ -421,7 +421,7 @@ impl SCDataRecordRef {
     pub fn get_link1(&self) -> Option<SCDataRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // StrongSCRecordManagerRcRef aka OuterCellWrapperRcRef
+            .0 // StrongSCDataRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -442,7 +442,7 @@ impl SCDataRecordRef {
     pub fn get_link2(&self) -> Option<SCDataRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // StrongSCRecordManagerRcRef aka OuterCellWrapperRcRef
+            .0 // StrongSCDataRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
