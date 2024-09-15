@@ -12,7 +12,7 @@ use pest_derive::Parser;
 
 use sc_record_manager::{enable_feature, is_debug_enabled, SCRecordRef};
 
-pub type SCLDataMap = HashMap<String, SCRecordRef>;
+pub type SCDataRecordMap = HashMap<String, SCRecordRef>;
 
 #[derive(Parser)]
 #[grammar_inline = r#"
@@ -46,7 +46,7 @@ fn get_cell_symbol_refs(cell_symbol_refs: Pair<Rule>) -> (Pair<Rule>, Pair<Rule>
     (refs.next().unwrap(), refs.next().unwrap())
 }
 
-fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
+fn handle_command_line(m: &mut SCDataRecordMap, p: Pairs<Rule>) -> String {
     let inner_pairs = p.clone().next().unwrap();
     let mut inner_cl_iter = inner_pairs.into_inner();
     let c1 = inner_cl_iter.next();
@@ -192,7 +192,7 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
     }
 }
 
-pub fn execute_command(m: &mut SCLDataMap, command_line: &str) -> String {
+pub fn execute_command(m: &mut SCDataRecordMap, command_line: &str) -> String {
     let cl = SCLParser::parse(Rule::command_line, command_line);
     if cl.is_ok() {
         handle_command_line(m, cl.unwrap())
@@ -210,7 +210,7 @@ use serial_test::serial;
 fn test_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map: SCDataRecordMap = HashMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -440,7 +440,7 @@ fn test_circular_5_records() {
 
     sc_record_manager::reset_drop_cell_count();
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map: SCDataRecordMap = HashMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -867,7 +867,7 @@ fn test_circular_5_records() {
 fn test_non_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map: SCDataRecordMap = HashMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -1015,7 +1015,7 @@ fn test_circular_3_records_with_many_many_updates() {
 
     sc_record_manager::reset_drop_cell_count();
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map: SCDataRecordMap = HashMap::new();
     let m = &mut map;
 
     let mut cl;
