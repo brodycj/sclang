@@ -6,7 +6,7 @@ USING REFERENCE MANAGEMENT OBJECTS WITH HELP FROM STRONG & WEAK REFERENCES TO AV
 
 STATUS: EXPERIMENTAL WITH NO GUARANTEES WHATSOEVER NEEDS MASSIVE CLEANUP & LIKELY NEEDS MASSIVE OPTIMIZATION, MULTI-THREADING NOT EXPECTED TO WORK
 
-HOW: Using `struct` objects with strong (A)RC references & weak (A)RC references to manage data record & data record linkage lifetimes - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
+HOW: Using `struct` data record objects with strong (A)RC references & weak (A)RC references to manage data record & data record linkage lifetimes - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
 
 XXX TODO DOCUMENT programmatic `sclang` & `sc_record_manager` APIs
 
