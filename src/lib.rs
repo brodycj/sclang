@@ -9,5 +9,5 @@ pub mod scl {
     pub use crate::sclmanager::create_cell_with_text_only;
     pub use crate::sclmanager::enable_feature;
     pub use crate::sclmanager::is_debug_enabled;
-    pub use crate::sclmanager::SCLRef;
+    pub use crate::sclmanager::SCRecordRef;
 }
