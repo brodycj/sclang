@@ -1,14 +1,12 @@
-use std::collections::HashMap;
+use sclang::sclang::{execute_command, SCDataRecordMap};
 
-use sclang::sclang::{execute_command, SCLDataMap};
-
-pub fn execute(m: &mut SCLDataMap, command_line: &str) {
+pub fn execute(m: &mut SCDataRecordMap, command_line: &str) {
     println!("{}", execute_command(m, command_line));
     println!("=== === ===");
 }
 
 fn main() {
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     execute(m, "( store-data data-1 (\"abc\" \"fds\") )");

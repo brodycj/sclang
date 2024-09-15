@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use rustyline::{config::Configurer, DefaultEditor, Result};
 
-use sclang::sclang::{execute_command, SCLDataMap};
+use sclang::sclang::{execute_command, SCDataRecordMap};
 
 fn main() -> Result<()> {
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut r = DefaultEditor::new()?;
