@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use rustyline::{config::Configurer, DefaultEditor, Result};
 
 use sclang::sclang::{execute_command, SCDataRecordMap};

@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use sclang::sclang::{execute_command, SCDataRecordMap};
 
 pub fn execute(m: &mut SCDataRecordMap, command_line: &str) {
