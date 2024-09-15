@@ -404,6 +404,10 @@ impl InnerSCInfoStorage {
 }
 
 impl SCRecordRef {
+    pub fn new(text1: &str, text2: &str, link1: SCRecordRef, link2: SCRecordRef) -> SCRecordRef {
+        create_cell_with_links(text1, text2, link1, link2)
+    }
+
     pub fn get_text1(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
         self.0.inner_sc_info_storage_ref.get_text1()
@@ -538,6 +542,8 @@ impl SCRecordRef {
         SCRecordRef(outer_wrapper_ref)
     }
 }
+
+// XXX TODO FOLD create_cell functions into SCRecordRef::new() above
 
 pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCRecordRef {
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
