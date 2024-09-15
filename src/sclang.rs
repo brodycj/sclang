@@ -1,4 +1,4 @@
-mod sclcelldata;
+use crate::sc_data_record_manager;
 
 use std::fmt::Write;
 
@@ -10,9 +10,9 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sclcelldata::{create_cell_with_links, create_cell_with_text_only, enable_feature, is_debug_enabled, SCLRef};
+use sc_data_record_manager::{enable_feature, is_debug_enabled, SCDataRecordRef};
 
-pub type SCLDataMap = HashMap<String, SCLRef>;
+pub type SCDataRecordMap = HashMap<String, SCDataRecordRef>;
 
 #[derive(Parser)]
 #[grammar_inline = r#"
@@ -46,7 +46,7 @@ fn get_cell_symbol_refs(cell_symbol_refs: Pair<Rule>) -> (Pair<Rule>, Pair<Rule>
     (refs.next().unwrap(), refs.next().unwrap())
 }
 
-fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
+fn handle_command_line(m: &mut SCDataRecordMap, p: Pairs<Rule>) -> String {
     let inner_pairs = p.clone().next().unwrap();
     let mut inner_cl_iter = inner_pairs.into_inner();
     let c1 = inner_cl_iter.next();
@@ -79,10 +79,13 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                             String::from(symbol_name),
                                             match symbol_refs {
                                                 // XXX TODO GRACEFUL HANDLING IN CASE OF NON-EXISTING SYMBOL NAME
-                                                Some(ref r) => {
-                                                    create_cell_with_links(tt1, tt2, m.get(r.0.as_str()).unwrap().clone(), m.get(r.1.as_str()).unwrap().clone())
-                                                }
-                                                None => create_cell_with_text_only(tt1, tt2),
+                                                Some(ref r) => SCDataRecordRef::new(
+                                                    tt1,
+                                                    tt2,
+                                                    Some(m.get(r.0.as_str()).unwrap().clone()),
+                                                    Some(m.get(r.1.as_str()).unwrap().clone()),
+                                                ),
+                                                None => SCDataRecordRef::new(tt1, tt2, None, None),
                                             },
                                         );
                                         let mut r = String::new();
@@ -189,7 +192,7 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
     }
 }
 
-pub fn execute_command(m: &mut SCLDataMap, command_line: &str) -> String {
+pub fn execute_command(m: &mut SCDataRecordMap, command_line: &str) -> String {
     let cl = SCLParser::parse(Rule::command_line, command_line);
     if cl.is_ok() {
         handle_command_line(m, cl.unwrap())
@@ -207,18 +210,18 @@ use serial_test::serial;
 fn test_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
     let mut x;
 
-    sclcelldata::reset_drop_cell_count();
+    sc_data_record_manager::reset_drop_cell_count();
 
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -370,7 +373,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -426,7 +429,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -435,9 +438,9 @@ fn test_circular_2_records() {
 fn test_circular_5_records() {
     use expect_test::expect;
 
-    sclcelldata::reset_drop_cell_count();
+    sc_data_record_manager::reset_drop_cell_count();
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -446,7 +449,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -642,7 +645,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-b)"#;
@@ -680,7 +683,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-c)"#;
@@ -817,7 +820,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-e)"#;
@@ -855,7 +858,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         5
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -864,18 +867,18 @@ fn test_circular_5_records() {
 fn test_non_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
     let mut x;
 
-    sclcelldata::reset_drop_cell_count();
+    sc_data_record_manager::reset_drop_cell_count();
 
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -971,7 +974,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-1)"#;
@@ -984,7 +987,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-2)"#;
@@ -997,7 +1000,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -1010,9 +1013,9 @@ fn test_circular_3_records_with_many_many_updates() {
     // TBD try up to 10 / 50 / 100 MILLION iterations - may take a while for this to run :)
     let UPDATE_ITERATION_COUNT = 10 * 1000;
 
-    sclcelldata::reset_drop_cell_count();
+    sc_data_record_manager::reset_drop_cell_count();
 
-    let mut map: SCLDataMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -1021,7 +1024,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(store-data data-node-a ("a-text-1" "a-text-2"))"#;
@@ -1071,7 +1074,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-a)"#;
@@ -1080,7 +1083,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-b)"#;
@@ -1089,7 +1092,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-c)"#;
@@ -1098,6 +1101,6 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         3
     "#]];
-    let drop_cell_count = sclcelldata::get_drop_cell_count();
+    let drop_cell_count = sc_data_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
