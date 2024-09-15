@@ -404,7 +404,7 @@ impl InnerSCInfoStorage {
 }
 
 impl SCRecordRef {
-    pub fn new(text1: &str, text2: &str, link1: SCRecordRef, link2: SCRecordRef) -> SCRecordRef {
+    pub fn new(text1: &str, text2: &str, link1: Option<SCRecordRef>, link2: Option<SCRecordRef>) -> SCRecordRef {
         create_cell_with_links(text1, text2, link1, link2)
     }
 
@@ -543,17 +543,8 @@ impl SCRecordRef {
     }
 }
 
-// XXX TODO FOLD create_cell functions into SCRecordRef::new() above
-
-pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCRecordRef {
-    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
-    let x = SCRecordRef::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
-    // XXX TODO THIS UPDATE IS NOT NEEDED AS THERE ARE NO PEERS TO LINK TO AT THIS POINT
-    x.update_data(text1, text2, None, None);
-    x
-}
-
-pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCRecordRef, link2: SCRecordRef) -> SCRecordRef {
+// XXX TODO MOVE THIS (???)
+fn create_cell_with_links(text1: &str, text2: &str, link1: Option<SCRecordRef>, link2: Option<SCRecordRef>) -> SCRecordRef {
     // XXX TODO ADD EXPLANATION FOR THIS:
     let cw = OuterCellWrapper::create_with_cell_data(text1, text2, None, None);
 
@@ -561,7 +552,7 @@ pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCRecordRef, link
     // XXX QUICK RATIONALE NEEDS EXPANDING: SHOULD NOT KEEP LINKS AT INNER-MOST MIDDLE WRAPPER LAYER IN ORDER TO AVOID (PREVENT) TRULY CIRCULAR REF CYCLES
     let x = SCRecordRef::from_outer_cell_wrapper(cw);
     // XXX TODO IMPROVE NOTE: THIS CREATES ANOTHER MIDDLE LIFETIME WRAPPER WITH STRONG REFERENCE TO THE PEER LINKS
-    x.update_data(text1, text2, Some(link1), Some(link2));
+    x.update_data(text1, text2, link1, link2);
     x
 }
 

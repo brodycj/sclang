@@ -10,7 +10,7 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sclmanager::{create_cell_with_links, create_cell_with_text_only, enable_feature, is_debug_enabled, SCRecordRef};
+use sclmanager::{enable_feature, is_debug_enabled, SCRecordRef};
 
 pub type SCLDataMap = HashMap<String, SCRecordRef>;
 
@@ -79,10 +79,13 @@ fn handle_command_line(m: &mut SCLDataMap, p: Pairs<Rule>) -> String {
                                             String::from(symbol_name),
                                             match symbol_refs {
                                                 // XXX TODO GRACEFUL HANDLING IN CASE OF NON-EXISTING SYMBOL NAME
-                                                Some(ref r) => {
-                                                    create_cell_with_links(tt1, tt2, m.get(r.0.as_str()).unwrap().clone(), m.get(r.1.as_str()).unwrap().clone())
-                                                }
-                                                None => create_cell_with_text_only(tt1, tt2),
+                                                Some(ref r) => SCRecordRef::new(
+                                                    tt1,
+                                                    tt2,
+                                                    Some(m.get(r.0.as_str()).unwrap().clone()),
+                                                    Some(m.get(r.1.as_str()).unwrap().clone()),
+                                                ),
+                                                None => SCRecordRef::new(tt1, tt2, None, None),
                                             },
                                         );
                                         let mut r = String::new();
