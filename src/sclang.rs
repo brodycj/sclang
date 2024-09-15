@@ -210,7 +210,7 @@ use serial_test::serial;
 fn test_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCDataRecordMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -440,7 +440,7 @@ fn test_circular_5_records() {
 
     sc_record_manager::reset_drop_cell_count();
 
-    let mut map: SCDataRecordMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -867,7 +867,7 @@ fn test_circular_5_records() {
 fn test_non_circular_2_records() {
     use expect_test::expect;
 
-    let mut map: SCDataRecordMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;
@@ -1015,7 +1015,7 @@ fn test_circular_3_records_with_many_many_updates() {
 
     sc_record_manager::reset_drop_cell_count();
 
-    let mut map: SCDataRecordMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     let mut cl;

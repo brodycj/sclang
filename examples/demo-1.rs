@@ -8,7 +8,7 @@ pub fn execute(m: &mut SCDataRecordMap, command_line: &str) {
 }
 
 fn main() {
-    let mut map: SCDataRecordMap = HashMap::new();
+    let mut map = SCDataRecordMap::new();
     let m = &mut map;
 
     execute(m, "( store-data data-1 (\"abc\" \"fds\") )");
