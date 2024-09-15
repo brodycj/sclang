@@ -2,10 +2,10 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCRecordRef(StrongSCRecordLifetimeManagerRef);
+pub struct SCRecordRef(StrongSCRecordManagerRcRef);
 
 // XXX TBD TEMPORARY ALIASING - XXX TODO IMPROVE INTERNAL struct naming
-type StrongSCRecordLifetimeManagerRef = OuterCellWrapperRcRef;
+type StrongSCRecordManagerRcRef = OuterCellWrapperRcRef;
 
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
