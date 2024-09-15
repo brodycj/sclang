@@ -8,7 +8,7 @@ STATUS: EXPERIMENTAL WITH NO GUARANTEES WHATSOEVER NEEDS MASSIVE CLEANUP & LIKEL
 
 HOW: Using data record cell objects with strong (A)RC references & weak (A)RC references to manage data record & data record linkage lifetimes - XXX TODO NEED TO DOCUMENT & EXPLAIN THIS
 
-XXX TODO DOCUMENT programmatic `sclang` & `sc_record_manager` APIs
+XXX TODO DOCUMENT programmatic `sclang` & `sc_data_record_manager` APIs
 
 MAJOR TODO ITEM IS TO SUPPORT `no_std` environment for EMBEDDED SYSTEMS
 
