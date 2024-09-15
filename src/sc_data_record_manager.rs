@@ -2,10 +2,10 @@ use std::fmt::Write;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
-pub struct SCLRef(PersistentSCManagerRef);
+pub struct SCDataRecordRef(StrongSCDataRecordManagerRcRef);
 
 // XXX TBD TEMPORARY ALIASING - XXX TODO IMPROVE INTERNAL struct naming
-type PersistentSCManagerRef = OuterCellWrapperRcRef;
+type StrongSCDataRecordManagerRcRef = OuterCellWrapperRcRef;
 
 type OuterCellWrapperRcRef = RcRef<OuterCellWrapper>;
 
@@ -29,15 +29,15 @@ pub fn is_debug_enabled() -> bool {
 
 // XXX TODO EXPLAIN RATIONALE FOR THESE WRAPPERS
 // XXX QUICK EXPLANATION OF WRAPPERS:
-// OUTER WRAPPER (as aliased to: PersistentSCLifetimeManagerRef) IS USED BY SCL REF TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
+// OUTER WRAPPER (as aliased to: StrongSCDataRecordManagerRcRef) IS USED BY SCDataRecordRef TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
 // MIDDLE WRAPPER IS ACTUALLY MIDDLE LIFETIME WRAPPER TO HELP MAINTAIN LIFETIME WITHOUT ANY STRONG REFERENCE CYCLES
 
 // XXX TODO NEED TO RECONSIDER BOTH NAMING AND HOW MUCH DESCRIPTIVE TEXT TO KEEP OR UPDATE;
 // HOPEFULLY BETTER NAMING CAN REDUCE THE NEED FOR SOME OF THE DESCRIPTIVE TEXT HERE
 
 struct OuterCellWrapper {
-    // NOTE: SCLRef keeps a reference to this "outer wrapper", which also acts as a top-level lifetime manager
-    // for SCL data cell objects which are *indirectly* referenced by SCLRef objects.
+    // NOTE: SCDataRecordRef keeps a reference to this "outer wrapper", which also acts as a strong top-level lifetime manager
+    // for SC data record objects which are *indirectly* referenced by SCDataRecordRef objects.
     // -- END OF NOTE
     // This wrapper contains the following important fields:
     // ** middle_cell_wrapper - references the outer-most middle lifetime wrapper (OUTER-MIDDLE LIFETIME WRAPPER),
@@ -55,9 +55,9 @@ type MiddleCellWrapperRcRef = RcRef<MiddleCellWrapper>;
 // XXX TODO RECONSIDER NAMING FOR THIS LIFETIME MANAGER
 struct MiddleCellWrapper {
     // NOTE: This is an object lifetime manager "wrapper" that helps keep data objects alive exactly as long as they are
-    // directly or indirectly reachable from the outside via using SCLRef objects.
+    // directly or indirectly reachable from the outside via SCDataRecordRef objects.
     // Keeping multiple levels of lifetime manager wrappers helps avoid strong circular references & allow
-    // unreadable SCL data cell objects to be automatically dropped & cleaned up once they are no longer reachable from the outside.
+    // unreadable SC data cell objects to be automatically dropped & cleaned up once they are no longer reachable from the outside.
     // XXX TODO NEED GOOD EXPLANATION OF THE STRATEGY FOR THIS !!!
     // --- END OF NOTE
     inner_sc_info_storage: InnerSCInfoStorageRcRef,
@@ -89,38 +89,38 @@ struct InnerSCInfoStorage {
     inner_middle_cell_wrapper_ref: RwWeakRef<MiddleCellWrapper>,
 }
 
-static drop_cell_count: RwValue<i32> = RwValue::new(0);
+static drop_sc_data_record_count: RwValue<i32> = RwValue::new(0);
 
 impl Drop for InnerSCInfoStorage {
     fn drop(&mut self) {
         if is_debug_enabled() {
-            println!("DROP CELL DATA with info:");
+            println!("DROP SC DATA RECORD with info:");
             println!("- text 1: {}", self.text1.read().unwrap());
             println!("- text 2: {}", self.text2.read().unwrap());
         }
-        let mut x = drop_cell_count.write().unwrap();
+        let mut x = drop_sc_data_record_count.write().unwrap();
         *x = *x + 1;
         drop(x);
         if is_debug_enabled() {
-            println!("DROP CELL COUNT: {}", get_drop_cell_count());
+            println!("DROP SC DATA RECORD COUNT: {}", get_drop_sc_data_record_count());
             println!("--- --- ---");
         }
     }
 }
 
-pub fn get_drop_cell_count() -> i32 {
-    drop_cell_count.read().unwrap().clone()
+pub fn get_drop_sc_data_record_count() -> i32 {
+    drop_sc_data_record_count.read().unwrap().clone()
 }
 
-pub fn reset_drop_cell_count() {
-    let mut x = drop_cell_count.write().unwrap();
+pub fn reset_drop_sc_data_record_count() {
+    let mut x = drop_sc_data_record_count.write().unwrap();
     *x = 0;
 }
 
 impl Drop for MiddleCellWrapper {
     fn drop(&mut self) {
         if is_debug_enabled() {
-            println!("DROP MIDDLE CELL WRAPPER for CELL DATA with info");
+            println!("DROP MIDDLE CELL WRAPPER for SC DATA RECORD with info");
             println!("- text 1: {}", self.inner_sc_info_storage.text1.read().unwrap());
             println!("- text 2: {}", self.inner_sc_info_storage.text2.read().unwrap());
             println!("--- --- ---");
@@ -145,7 +145,7 @@ impl Drop for MiddleCellWrapper {
             return;
         }
 
-        // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE CELL API FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
+        // NOTE: THIS CODE REQUIRES QUICK & UGLY WORKAROUND IN CREATE SC DATA RECORD FN CODE FURTHER BELOW - XXX TODO NEED TO EXPLAIN THIS
         // XXX TODO LOOK FOR A WAY TO IMPROVE THIS
 
         let inner_sc_linkage_ref = RcRef::new(InnerSCLinkageInfo {
@@ -403,7 +403,11 @@ impl InnerSCInfoStorage {
     }
 }
 
-impl SCLRef {
+impl SCDataRecordRef {
+    pub fn new(text1: &str, text2: &str, link1: Option<SCDataRecordRef>, link2: Option<SCDataRecordRef>) -> SCDataRecordRef {
+        create_sc_data_record_with_links(text1, text2, link1, link2)
+    }
+
     pub fn get_text1(&self) -> String {
         // XXX TBD ADD EASIER UTIL FN ???
         self.0.inner_sc_info_storage_ref.get_text1()
@@ -414,10 +418,10 @@ impl SCLRef {
         self.0.inner_sc_info_storage_ref.get_text2()
     }
 
-    pub fn get_link1(&self) -> Option<SCLRef> {
+    pub fn get_link1(&self) -> Option<SCDataRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // PersistentSCManagerRef aka OuterCellWrapperRcRef
+            .0 // StrongSCDataRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -429,16 +433,16 @@ impl SCLRef {
         let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link1.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCDataRecordRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
     }
 
-    pub fn get_link2(&self) -> Option<SCLRef> {
+    pub fn get_link2(&self) -> Option<SCDataRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // PersistentSCManagerRef aka OuterCellWrapperRcRef
+            .0 // StrongSCDataRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -450,14 +454,14 @@ impl SCLRef {
         let maybe_linked_middle_cell_wrapper_ref = sc_linkage_info_ref.unwrap().link2.clone();
         match maybe_linked_middle_cell_wrapper_ref {
             None => None,
-            Some(middle_cell_wrapper_ref) => Some(SCLRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
+            Some(middle_cell_wrapper_ref) => Some(SCDataRecordRef::from_outer_cell_wrapper(OuterCellWrapper::ref_middle_cell_wrapper_ref(
                 middle_cell_wrapper_ref,
             ))),
         }
     }
 
     // XXX TBD SHOULD THIS TAKE &mut self ???
-    pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCLRef>, link2: Option<SCLRef>) {
+    pub fn update_data(&self, text1: &str, text2: &str, link1: Option<SCDataRecordRef>, link2: Option<SCDataRecordRef>) {
         let my_middle_cell_wrapper_ref = self.get_middle_cell_wrapper();
 
         my_middle_cell_wrapper_ref.update_cell_text_data(text1, text2);
@@ -534,36 +538,21 @@ impl SCLRef {
         self.0.middle_cell_wrapper.read().unwrap().clone()
     }
 
-    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCLRef {
-        SCLRef(outer_wrapper_ref)
+    fn from_outer_cell_wrapper(outer_wrapper_ref: OuterCellWrapperRcRef) -> SCDataRecordRef {
+        SCDataRecordRef(outer_wrapper_ref)
     }
 }
 
-pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLRef {
-    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
-    let x = SCLRef::from_outer_cell_wrapper(OuterCellWrapper::create_with_cell_data(text1, text2, None, None));
-    // XXX TODO THIS UPDATE IS NOT NEEDED AS THERE ARE NO PEERS TO LINK TO AT THIS POINT
-    x.update_data(text1, text2, None, None);
-    x
-}
+// XXX TODO MOVE THIS (???)
+fn create_sc_data_record_with_links(text1: &str, text2: &str, link1: Option<SCDataRecordRef>, link2: Option<SCDataRecordRef>) -> SCDataRecordRef {
+    // XXX TODO ADD EXPLANATION FOR THIS:
+    let cw = OuterCellWrapper::create_with_cell_data(text1, text2, None, None);
 
-pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLRef, link2: SCLRef) -> SCLRef {
-    // XXX TODO USE UTIL FN HERE
-    let cw = OuterCellWrapper::create_with_cell_data(
-        text1,
-        text2,
-        // XXX TBD SHOULD BE NO NEED TO CREATE WITH THE LINKS AT THIS POINT
-        // AS THE UPDATE BELOW WILL INCLUDE THE PEER LINKS NEEDED
-        // (NEED TO CHECK IMPACT ON BENCHMARKS WHEN REMOVING THE LINKS FROM THIS PART)
-        Some(link1.clone().0.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().0.middle_cell_wrapper.read().unwrap().clone()),
-    );
-
-    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
+    // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE DATA CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
     // XXX QUICK RATIONALE NEEDS EXPANDING: SHOULD NOT KEEP LINKS AT INNER-MOST MIDDLE WRAPPER LAYER IN ORDER TO AVOID (PREVENT) TRULY CIRCULAR REF CYCLES
-    let x = SCLRef::from_outer_cell_wrapper(cw);
+    let x = SCDataRecordRef::from_outer_cell_wrapper(cw);
     // XXX TODO IMPROVE NOTE: THIS CREATES ANOTHER MIDDLE LIFETIME WRAPPER WITH STRONG REFERENCE TO THE PEER LINKS
-    x.update_data(text1, text2, Some(link1), Some(link2));
+    x.update_data(text1, text2, link1, link2);
     x
 }
 

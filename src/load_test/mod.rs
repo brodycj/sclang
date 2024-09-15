@@ -1,7 +1,7 @@
-use super::sclang::{execute_command, SCLDataMap};
+use super::sclang::{execute_command, SCDataRecordMap};
 
 pub fn load_test(update_iteration_count: i32, read_iteration_count: i32) {
-    let mut symbol_data_map = SCLDataMap::new();
+    let mut symbol_data_map = SCDataRecordMap::new();
     let m = &mut symbol_data_map;
 
     // SETUP CIRCULAR DATA WITH 3 CELLS
