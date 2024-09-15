@@ -1,4 +1,4 @@
-use crate::sclmanager;
+use crate::sc_record_manager;
 
 use std::fmt::Write;
 
@@ -10,7 +10,7 @@ use pest::{
 };
 use pest_derive::Parser;
 
-use sclmanager::{enable_feature, is_debug_enabled, SCRecordRef};
+use sc_record_manager::{enable_feature, is_debug_enabled, SCRecordRef};
 
 pub type SCLDataMap = HashMap<String, SCRecordRef>;
 
@@ -216,12 +216,12 @@ fn test_circular_2_records() {
     let mut cl;
     let mut x;
 
-    sclmanager::reset_drop_cell_count();
+    sc_record_manager::reset_drop_cell_count();
 
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -373,7 +373,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -429,7 +429,7 @@ fn test_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -438,7 +438,7 @@ fn test_circular_2_records() {
 fn test_circular_5_records() {
     use expect_test::expect;
 
-    sclmanager::reset_drop_cell_count();
+    sc_record_manager::reset_drop_cell_count();
 
     let mut map: SCLDataMap = HashMap::new();
     let m = &mut map;
@@ -449,7 +449,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -645,7 +645,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-b)"#;
@@ -683,7 +683,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-c)"#;
@@ -820,7 +820,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(show-data data-node-e)"#;
@@ -858,7 +858,7 @@ fn test_circular_5_records() {
     x = expect![[r#"
         5
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -873,12 +873,12 @@ fn test_non_circular_2_records() {
     let mut cl;
     let mut x;
 
-    sclmanager::reset_drop_cell_count();
+    sc_record_manager::reset_drop_cell_count();
 
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(enable-feature debug)"#;
@@ -974,7 +974,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-1)"#;
@@ -987,7 +987,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-2)"#;
@@ -1000,7 +1000,7 @@ fn test_non_circular_2_records() {
     x = expect![[r#"
         2
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
 
@@ -1013,7 +1013,7 @@ fn test_circular_3_records_with_many_many_updates() {
     // TBD try up to 10 / 50 / 100 MILLION iterations - may take a while for this to run :)
     let UPDATE_ITERATION_COUNT = 10 * 1000;
 
-    sclmanager::reset_drop_cell_count();
+    sc_record_manager::reset_drop_cell_count();
 
     let mut map: SCLDataMap = HashMap::new();
     let m = &mut map;
@@ -1024,7 +1024,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(store-data data-node-a ("a-text-1" "a-text-2"))"#;
@@ -1074,7 +1074,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-a)"#;
@@ -1083,7 +1083,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-b)"#;
@@ -1092,7 +1092,7 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         0
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 
     cl = r#"(drop-symbol data-node-c)"#;
@@ -1101,6 +1101,6 @@ fn test_circular_3_records_with_many_many_updates() {
     x = expect![[r#"
         3
     "#]];
-    let drop_cell_count = sclmanager::get_drop_cell_count();
+    let drop_cell_count = sc_record_manager::get_drop_cell_count();
     x.assert_debug_eq(&drop_cell_count);
 }
