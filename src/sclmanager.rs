@@ -548,16 +548,8 @@ pub fn create_cell_with_text_only(text1: &str, text2: &str) -> SCLRef {
 }
 
 pub fn create_cell_with_links(text1: &str, text2: &str, link1: SCLRef, link2: SCLRef) -> SCLRef {
-    // XXX TODO USE UTIL FN HERE
-    let cw = OuterCellWrapper::create_with_cell_data(
-        text1,
-        text2,
-        // XXX TBD SHOULD BE NO NEED TO CREATE WITH THE LINKS AT THIS POINT
-        // AS THE UPDATE BELOW WILL INCLUDE THE PEER LINKS NEEDED
-        // (NEED TO CHECK IMPACT ON BENCHMARKS WHEN REMOVING THE LINKS FROM THIS PART)
-        Some(link1.clone().0.middle_cell_wrapper.read().unwrap().clone()),
-        Some(link2.clone().0.middle_cell_wrapper.read().unwrap().clone()),
-    );
+    // XXX TODO ADD EXPLANATION FOR THIS:
+    let cw = OuterCellWrapper::create_with_cell_data(text1, text2, None, None);
 
     // XXX QUICK & UGLY WORKAROUND FOR XXX XXX IN MIDDLE CELL LIFETIME WRAPPER DROP FUNCTION ABOVE
     // XXX QUICK RATIONALE NEEDS EXPANDING: SHOULD NOT KEEP LINKS AT INNER-MOST MIDDLE WRAPPER LAYER IN ORDER TO AVOID (PREVENT) TRULY CIRCULAR REF CYCLES
