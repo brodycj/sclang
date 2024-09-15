@@ -29,7 +29,7 @@ pub fn is_debug_enabled() -> bool {
 
 // XXX TODO EXPLAIN RATIONALE FOR THESE WRAPPERS
 // XXX QUICK EXPLANATION OF WRAPPERS:
-// OUTER WRAPPER (as aliased to: StrongSCRecordLifetimeManagerRef) IS USED BY SCL REF TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
+// OUTER WRAPPER (as aliased to: StrongSCRecordManagerRcRef) IS USED BY SCL REF TO KEEP STRONG REFERENCE & HELP MAINTAIN LIFETIME
 // MIDDLE WRAPPER IS ACTUALLY MIDDLE LIFETIME WRAPPER TO HELP MAINTAIN LIFETIME WITHOUT ANY STRONG REFERENCE CYCLES
 
 // XXX TODO NEED TO RECONSIDER BOTH NAMING AND HOW MUCH DESCRIPTIVE TEXT TO KEEP OR UPDATE;
@@ -421,7 +421,7 @@ impl SCRecordRef {
     pub fn get_link1(&self) -> Option<SCRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // StrongSCRecordLifetimeManagerRef aka OuterCellWrapperRcRef
+            .0 // StrongSCRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
@@ -442,7 +442,7 @@ impl SCRecordRef {
     pub fn get_link2(&self) -> Option<SCRecordRef> {
         // XXX TODO ADD & USE HELPER FN FOR THIS MATCH HERE (IF POSSIBLE WITHOUT SIGNIFICANT IMPACT ON ANY BENCHMARKS)
         let sc_linkage_info_ref = self
-            .0 // StrongSCRecordLifetimeManagerRef aka OuterCellWrapperRcRef
+            .0 // StrongSCRecordManagerRcRef aka OuterCellWrapperRcRef
             .inner_sc_info_storage_ref
             .sc_linkage_info_weak_ref
             .read()
